@@ -1,24 +1,16 @@
-import Foundation
+import SwiftUI
 
 @MainActor
 final class GameState: ObservableObject {
-    enum Phase {
-        case setup
-        case inProgress
-
-        var label: String {
-            switch self {
-            case .setup:
-                return "Setup"
-            case .inProgress:
-                return "In Progress"
-            }
-        }
+    enum AppScreen: Equatable {
+        case menu
+        case rules
+        case game
     }
 
-    enum Player: String {
-        case one = "Player 1"
-        case two = "Player 2"
+    enum Player: Hashable {
+        case one
+        case two
 
         var next: Player {
             switch self {
@@ -30,34 +22,274 @@ final class GameState: ObservableObject {
         }
     }
 
+    enum HandoffReason: Equatable {
+        case secretSelected
+        case turnPassed
+        case wrongGuess(Character)
+    }
+
+    enum EndReason: Equatable {
+        case correctGuess(Character)
+    }
+
+    enum Phase: Equatable {
+        case selectingSecret(Player)
+        case handoff(from: Player, to: Player, reason: HandoffReason)
+        case choosingTurnAction(Player)
+        case awaitingAnswer(Player)
+        case eliminating(Player, answer: Bool)
+        case guessing(Player)
+        case gameOver(winner: Player, reason: EndReason)
+    }
+
     @Published private(set) var characters: [Character] = Character.starterRoster
     @Published private(set) var playerOneSecret: Character?
     @Published private(set) var playerTwoSecret: Character?
     @Published private(set) var currentPlayer: Player = .one
-    @Published private(set) var phase: Phase = .setup
-
-    let mvpGoals: [String] = [
-        "Two players on one iPhone",
-        "Fully offline play",
-        "Secret character for each player",
-        "Yes or no questions",
-        "Character elimination",
-        "First correct guess wins"
+    @Published private(set) var phase: Phase = .selectingSecret(.one)
+    @Published private(set) var appScreen: AppScreen = .menu
+    @Published private(set) var hasRoundInProgress = false
+    @Published private(set) var eliminatedCharacterIDsByPlayer: [Player: Set<Character.ID>] = [
+        .one: [],
+        .two: []
     ]
 
+    init() {
+        #if DEBUG
+        applyDebugScenarioIfNeeded()
+        #endif
+    }
+
     func startNewGame() {
-        guard characters.count >= 2 else { return }
+        appScreen = .game
+        hasRoundInProgress = true
+        resetRound()
+    }
 
-        let shuffledCharacters = characters.shuffled()
-        playerOneSecret = shuffledCharacters[0]
-        playerTwoSecret = shuffledCharacters[1]
+    func resumeGame() {
+        guard hasRoundInProgress else { return }
+        appScreen = .game
+    }
+
+    func showMenu() {
+        appScreen = .menu
+    }
+
+    func showRules() {
+        appScreen = .rules
+    }
+
+    func chooseAskQuestion() {
+        guard case .choosingTurnAction(let player) = phase else { return }
+        phase = .awaitingAnswer(player)
+    }
+
+    func chooseMakeGuess() {
+        guard case .choosingTurnAction(let player) = phase else { return }
+        phase = .guessing(player)
+    }
+
+    func returnToTurnChoice() {
+        switch phase {
+        case .awaitingAnswer(let player), .guessing(let player):
+            phase = .choosingTurnAction(player)
+        case .selectingSecret,
+                .handoff,
+                .choosingTurnAction,
+                .eliminating,
+                .gameOver:
+            break
+        }
+    }
+
+    func recordAnswer(_ answer: Bool) {
+        guard case .awaitingAnswer(let player) = phase else { return }
+        phase = .eliminating(player, answer: answer)
+    }
+
+    func passTurn() {
+        guard case .eliminating(let player, _) = phase else { return }
+        showHandoff(from: player, reason: .turnPassed)
+    }
+
+    func continueAfterHandoff() {
+        guard case .handoff(_, let nextPlayer, _) = phase else { return }
+        showNextStep(for: nextPlayer)
+    }
+
+    func handleCharacterTap(_ character: Character) {
+        switch phase {
+        case .selectingSecret(let player):
+            selectSecret(character, for: player)
+        case .eliminating(let player, _):
+            toggleEliminated(character, for: player)
+        case .guessing(let player):
+            submitGuess(character, by: player)
+        case .handoff,
+                .choosingTurnAction,
+                .awaitingAnswer,
+                .gameOver:
+            break
+        }
+    }
+
+    func secretCharacter(for player: Player) -> Character? {
+        player == .one ? playerOneSecret : playerTwoSecret
+    }
+
+    func isEliminated(_ character: Character, for player: Player) -> Bool {
+        eliminatedIDs(for: player).contains(character.id)
+    }
+
+    func remainingCharacters(for player: Player) -> [Character] {
+        let hiddenIDs = eliminatedIDs(for: player)
+        return characters.filter { !hiddenIDs.contains($0.id) }
+    }
+
+    func eliminatedCount(for player: Player) -> Int {
+        eliminatedIDs(for: player).count
+    }
+
+    private func resetRound() {
         currentPlayer = .one
-        phase = .inProgress
+        phase = .selectingSecret(.one)
+        playerOneSecret = nil
+        playerTwoSecret = nil
+        eliminatedCharacterIDsByPlayer = [.one: [], .two: []]
     }
 
-    func advanceTurn() {
-        guard phase == .inProgress else { return }
-        currentPlayer = currentPlayer.next
+    private func selectSecret(_ character: Character, for player: Player) {
+        setSecret(character, for: player)
+        showHandoff(from: player, reason: .secretSelected)
     }
+
+    private func toggleEliminated(_ character: Character, for player: Player) {
+        var updatedIDs = eliminatedIDs(for: player)
+
+        if updatedIDs.contains(character.id) {
+            updatedIDs.remove(character.id)
+        } else {
+            updatedIDs.insert(character.id)
+        }
+
+        eliminatedCharacterIDsByPlayer[player] = updatedIDs
+    }
+
+    private func submitGuess(_ character: Character, by player: Player) {
+        let opponent = player.next
+        guard let opponentSecret = secretCharacter(for: opponent) else { return }
+
+        if character.id == opponentSecret.id {
+            hasRoundInProgress = false
+            phase = .gameOver(winner: player, reason: .correctGuess(character))
+        } else {
+            showHandoff(from: player, reason: .wrongGuess(character))
+        }
+    }
+
+    private func setSecret(_ character: Character, for player: Player) {
+        if player == .one {
+            playerOneSecret = character
+        } else {
+            playerTwoSecret = character
+        }
+    }
+
+    private func showHandoff(from player: Player, reason: HandoffReason) {
+        let nextPlayer = player.next
+        currentPlayer = nextPlayer
+        phase = .handoff(from: player, to: nextPlayer, reason: reason)
+    }
+
+    private func showNextStep(for player: Player) {
+        currentPlayer = player
+        phase = secretCharacter(for: player) == nil ? .selectingSecret(player) : .choosingTurnAction(player)
+    }
+
+    private func eliminatedIDs(for player: Player) -> Set<Character.ID> {
+        eliminatedCharacterIDsByPlayer[player, default: []]
+    }
+
+    #if DEBUG
+    private func applyDebugScenarioIfNeeded() {
+        guard let scenario = ProcessInfo.processInfo.environment["GUESSWHO_DEBUG_SCENARIO"] else {
+            return
+        }
+
+        switch scenario {
+        case "rules":
+            appScreen = .rules
+        case "home_resume":
+            seedLiveRound()
+            appScreen = .menu
+        case "secret_1":
+            appScreen = .game
+            hasRoundInProgress = true
+            phase = .selectingSecret(.one)
+        case "secret_2":
+            seedPlayerOneSecretOnly()
+            currentPlayer = .two
+            phase = .selectingSecret(.two)
+        case "handoff_secret":
+            seedPlayerOneSecretOnly()
+            currentPlayer = .two
+            phase = .handoff(from: .one, to: .two, reason: .secretSelected)
+        case "turn_choice":
+            seedLiveRound()
+            currentPlayer = .one
+            phase = .choosingTurnAction(.one)
+        case "awaiting_answer":
+            seedLiveRound()
+            currentPlayer = .one
+            phase = .awaitingAnswer(.one)
+        case "eliminating_yes":
+            seedLiveRound()
+            currentPlayer = .one
+            eliminatedCharacterIDsByPlayer[.one] = Set(characters.prefix(9).map(\.id))
+            phase = .eliminating(.one, answer: true)
+        case "guessing":
+            seedLiveRound()
+            currentPlayer = .one
+            eliminatedCharacterIDsByPlayer[.one] = Set(characters.prefix(18).map(\.id))
+            phase = .guessing(.one)
+        case "handoff_turn":
+            seedLiveRound()
+            currentPlayer = .two
+            phase = .handoff(from: .one, to: .two, reason: .turnPassed)
+        case "handoff_wrong_guess":
+            seedLiveRound()
+            currentPlayer = .two
+            phase = .handoff(from: .one, to: .two, reason: .wrongGuess(characters[7]))
+        case "game_over":
+            seedLiveRound()
+            hasRoundInProgress = false
+            currentPlayer = .one
+            phase = .gameOver(winner: .one, reason: .correctGuess(playerTwoSecret ?? characters[6]))
+        default:
+            break
+        }
+    }
+
+    private func seedPlayerOneSecretOnly() {
+        appScreen = .game
+        hasRoundInProgress = true
+        currentPlayer = .one
+        playerOneSecret = characters[0]
+        playerTwoSecret = nil
+        eliminatedCharacterIDsByPlayer = [.one: [], .two: []]
+    }
+
+    private func seedLiveRound() {
+        appScreen = .game
+        hasRoundInProgress = true
+        playerOneSecret = characters[0]
+        playerTwoSecret = characters[6]
+        currentPlayer = .one
+        eliminatedCharacterIDsByPlayer = [
+            .one: Set([characters[1].id, characters[4].id, characters[6].id, characters[10].id]),
+            .two: Set([characters[0].id, characters[3].id, characters[5].id, characters[11].id])
+        ]
+        phase = .choosingTurnAction(.one)
+    }
+    #endif
 }
-
