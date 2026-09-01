@@ -2,6 +2,13 @@ import SwiftUI
 
 @MainActor
 final class GameState: ObservableObject {
+    struct QuestionNote: Identifiable, Equatable {
+        let id: UUID
+        let stepNumber: Int
+        var question: String
+        var answer: Bool
+    }
+
     enum AppScreen: Equatable {
         case menu
         case rules
@@ -52,6 +59,14 @@ final class GameState: ObservableObject {
     @Published private(set) var eliminatedCharacterIDsByPlayer: [Player: Set<Character.ID>] = [
         .one: [],
         .two: []
+    ]
+    @Published private(set) var questionNotesByPlayer: [Player: [QuestionNote]] = [
+        .one: [],
+        .two: []
+    ]
+    @Published private(set) var questionDraftsByPlayer: [Player: String] = [
+        .one: "",
+        .two: ""
     ]
 
     init() {
@@ -104,6 +119,7 @@ final class GameState: ObservableObject {
 
     func recordAnswer(_ answer: Bool) {
         guard case .awaitingAnswer(let player) = phase else { return }
+        saveQuestionNoteIfNeeded(for: player, answer: answer)
         phase = .eliminating(player, answer: answer)
     }
 
@@ -150,12 +166,52 @@ final class GameState: ObservableObject {
         eliminatedIDs(for: player).count
     }
 
+    func questionNotes(for player: Player) -> [QuestionNote] {
+        questionNotesByPlayer[player, default: []]
+    }
+
+    func questionDraft(for player: Player) -> String {
+        questionDraftsByPlayer[player, default: ""]
+    }
+
+    func nextQuestionStep(for player: Player) -> Int {
+        questionNotes(for: player).count + 1
+    }
+
+    func updateQuestionDraft(_ question: String, for player: Player) {
+        var updatedDrafts = questionDraftsByPlayer
+        updatedDrafts[player] = question
+        questionDraftsByPlayer = updatedDrafts
+    }
+
+    func updateQuestionNoteText(
+        _ question: String,
+        noteID: QuestionNote.ID,
+        for player: Player
+    ) {
+        updateQuestionNote(for: player, noteID: noteID) { note in
+            note.question = question
+        }
+    }
+
+    func updateQuestionNoteAnswer(
+        _ answer: Bool,
+        noteID: QuestionNote.ID,
+        for player: Player
+    ) {
+        updateQuestionNote(for: player, noteID: noteID) { note in
+            note.answer = answer
+        }
+    }
+
     private func resetRound() {
         currentPlayer = .one
         phase = .selectingSecret(.one)
         playerOneSecret = nil
         playerTwoSecret = nil
         eliminatedCharacterIDsByPlayer = [.one: [], .two: []]
+        questionNotesByPlayer = [.one: [], .two: []]
+        questionDraftsByPlayer = [.one: "", .two: ""]
     }
 
     private func selectSecret(_ character: Character, for player: Player) {
@@ -208,6 +264,47 @@ final class GameState: ObservableObject {
 
     private func eliminatedIDs(for player: Player) -> Set<Character.ID> {
         eliminatedCharacterIDsByPlayer[player, default: []]
+    }
+
+    private func saveQuestionNoteIfNeeded(for player: Player, answer: Bool) {
+        let trimmedQuestion = questionDraft(for: player)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        clearQuestionDraft(for: player)
+
+        guard !trimmedQuestion.isEmpty else { return }
+
+        var updatedNotes = questionNotes(for: player)
+        updatedNotes.append(
+            QuestionNote(
+                id: UUID(),
+                stepNumber: updatedNotes.count + 1,
+                question: trimmedQuestion,
+                answer: answer
+            )
+        )
+        questionNotesByPlayer[player] = updatedNotes
+    }
+
+    private func clearQuestionDraft(for player: Player) {
+        var updatedDrafts = questionDraftsByPlayer
+        updatedDrafts[player] = ""
+        questionDraftsByPlayer = updatedDrafts
+    }
+
+    private func updateQuestionNote(
+        for player: Player,
+        noteID: QuestionNote.ID,
+        update: (inout QuestionNote) -> Void
+    ) {
+        var updatedNotes = questionNotes(for: player)
+
+        guard let noteIndex = updatedNotes.firstIndex(where: { $0.id == noteID }) else {
+            return
+        }
+
+        update(&updatedNotes[noteIndex])
+        questionNotesByPlayer[player] = updatedNotes
     }
 
     #if DEBUG

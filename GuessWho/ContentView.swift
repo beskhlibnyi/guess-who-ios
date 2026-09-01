@@ -3,14 +3,17 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var gameState: GameState
     @AppStorage(guessWhoLanguageOverrideKey) private var homeLanguageOverride = ""
+    @AppStorage(guessWhoPlayerOneNameKey) private var storedPlayerOneName = ""
+    @AppStorage(guessWhoPlayerTwoNameKey) private var storedPlayerTwoName = ""
     @State private var showsNewGameConfirmation = false
+    @State private var showsPlayerSetup = false
 
     private let columns = [
         GridItem(.adaptive(minimum: 156), spacing: 16, alignment: .top)
     ]
 
     private var homeAlertTitle: String {
-        localizedHomeCopy("home.alert.title", fallback: "Start a new game?")
+        localizedHomeCopy("home.alert.title", fallback: "Start over?")
     }
 
     private var homeAlertCancel: String {
@@ -24,22 +27,22 @@ struct ContentView: View {
     private var homeAlertMessage: String {
         localizedHomeCopy(
             "home.alert.message",
-            fallback: "This clears the current round, both secret picks, and every eliminated card."
+            fallback: "Your current game will be cleared."
         )
     }
 
     private var homeTitle: String {
-        localizedHomeCopy("home.title", fallback: "GuessWho")
+        localizedHomeCopy("home.title", fallback: "ХТО")
     }
 
     private var homeOverview: String {
-        localizedHomeCopy("home.overview", fallback: "Offline pass-and-play for two players on one iPhone.")
+        localizedHomeCopy("home.overview", fallback: "Two players. One iPhone.")
     }
 
     private var homeSummary: String {
         localizedHomeCopy(
             "home.summary",
-            fallback: "Pick secret characters, ask smart yes-or-no questions, and make the final guess."
+            fallback: "Pick a secret. Ask yes-or-no questions. Make your guess."
         )
     }
 
@@ -51,16 +54,39 @@ struct ContentView: View {
         localizedHomeCopy("home.resume", fallback: "Resume Game")
     }
 
+    private var homePlayersTitle: String {
+        localizedHomeCopy("home.players.title", fallback: "Name your players")
+    }
+
+    private var homePlayersMessage: String {
+        localizedHomeCopy(
+            "home.players.message",
+            fallback: "Add names for each side, or leave them blank to keep the default labels."
+        )
+    }
+
+    private var homePlayersPlaceholder: String {
+        localizedHomeCopy("home.players.placeholder", fallback: "Enter a name")
+    }
+
+    private var homePlayersBackTitle: String {
+        localizedHomeCopy("home.players.back", fallback: "Back")
+    }
+
+    private var homePlayersStartTitle: String {
+        localizedHomeCopy("home.players.start", fallback: "Start Game")
+    }
+
     private var homeRulesTitle: String {
         localizedHomeCopy("home.rules", fallback: "How to Play")
     }
 
     private var homeRoundInProgressTitle: String {
-        localizedHomeCopy("home.live_round.title", fallback: "Round in progress")
+        localizedHomeCopy("home.live_round.title", fallback: "Game in progress")
     }
 
     private var homeFooter: String {
-        localizedHomeCopy("home.footer", fallback: "© 2026 GuessWho")
+        localizedHomeCopy("home.footer", fallback: "© 2026 ХТО")
     }
 
     private var rulesPageTitle: String {
@@ -70,7 +96,7 @@ struct ContentView: View {
     private var rulesPageSubtitle: String {
         localizedHomeCopy(
             "rules.subtitle",
-            fallback: "A round is simple: pick privately, ask or guess, pass the phone, and repeat."
+            fallback: "Pick in private, pass the phone, and narrow it down."
         )
     }
 
@@ -79,46 +105,48 @@ struct ContentView: View {
     }
 
     private var rulesStepOneTitle: String {
-        localizedHomeCopy("rules.step1.title", fallback: "Pick a secret in private")
+        localizedHomeCopy("rules.step1.title", fallback: "Pick in private")
     }
 
     private var rulesStepOneMessage: String {
-        localizedHomeCopy(
+        guessWhoLocalizedFormat(
             "rules.step1.message",
-            fallback: "Player 1 picks first, passes the phone, then Player 2 picks privately."
+            fallback: "%@ picks first. Then %@.",
+            playerName(.one),
+            playerName(.two)
         )
     }
 
     private var rulesStepTwoTitle: String {
-        localizedHomeCopy("rules.step2.title", fallback: "Choose one path each turn")
+        localizedHomeCopy("rules.step2.title", fallback: "Ask or guess")
     }
 
     private var rulesStepTwoMessage: String {
         localizedHomeCopy(
             "rules.step2.message",
-            fallback: "Start with either Ask a Question or Make a Guess."
+            fallback: "Start every turn by choosing one."
         )
     }
 
     private var rulesStepThreeTitle: String {
-        localizedHomeCopy("rules.step3.title", fallback: "Ask first, eliminate after")
+        localizedHomeCopy("rules.step3.title", fallback: "Answer first")
     }
 
     private var rulesStepThreeMessage: String {
         localizedHomeCopy(
             "rules.step3.message",
-            fallback: "Hear yes or no first, then hide suspects. Guess mode never changes the board."
+            fallback: "After Yes or No, cross off the faces that no longer fit."
         )
     }
 
     private var rulesStepFourTitle: String {
-        localizedHomeCopy("rules.step4.title", fallback: "Win with an explicit guess")
+        localizedHomeCopy("rules.step4.title", fallback: "Guess to win")
     }
 
     private var rulesStepFourMessage: String {
         localizedHomeCopy(
             "rules.step4.message",
-            fallback: "One card left is not enough. You still have to tap the final guess."
+            fallback: "Even with one face left, you still need to make the final guess."
         )
     }
 
@@ -138,20 +166,28 @@ struct ContentView: View {
         localizedHomeCopy("common.no", fallback: "No")
     }
 
+    private var notesTitle: String {
+        localizedHomeCopy("notes.title", fallback: "Notes")
+    }
+
+    private var notesMessage: String {
+        localizedHomeCopy("notes.message", fallback: "One question per step.")
+    }
+
+    private var notesEmptyMessage: String {
+        localizedHomeCopy("notes.empty", fallback: "Your saved steps will appear here.")
+    }
+
+    private var notesQuestionPlaceholder: String {
+        localizedHomeCopy("notes.question.placeholder", fallback: "Asked question")
+    }
+
     private var playerChipTitle: String {
         localizedHomeCopy("common.player", fallback: "Player")
     }
 
-    private var leftChipTitle: String {
-        localizedHomeCopy("common.left", fallback: "Left")
-    }
-
-    private var outChipTitle: String {
-        localizedHomeCopy("common.out", fallback: "Out")
-    }
-
     private var suspectsLeftTitle: String {
-        localizedHomeCopy("common.suspects_left", fallback: "Suspects Left")
+        localizedHomeCopy("common.suspects_left", fallback: "Left")
     }
 
     private var eliminatedTitle: String {
@@ -162,114 +198,68 @@ struct ContentView: View {
         localizedHomeCopy("common.unknown", fallback: "Unknown")
     }
 
-    private var privatePickLabel: String {
-        localizedHomeCopy("screen.secret.label", fallback: "Private Pick")
-    }
-
-    private var privacyHandoffLabel: String {
-        localizedHomeCopy("screen.handoff.label", fallback: "Privacy Handoff")
-    }
-
-    private var startMyTurnTitle: String {
-        localizedHomeCopy("screen.handoff.cta", fallback: "Start My Turn")
-    }
-
     private var turnStartLabel: String {
-        localizedHomeCopy("screen.turn.label", fallback: "Turn Start")
+        localizedHomeCopy("screen.turn.label", fallback: "Your Turn")
     }
 
     private var askTitle: String {
         localizedHomeCopy("screen.turn.ask.title", fallback: "Ask a Question")
     }
 
-    private var askSubtitle: String {
-        localizedHomeCopy("screen.turn.ask.subtitle", fallback: "Safer turn")
-    }
-
     private var askMessage: String {
         localizedHomeCopy(
             "screen.turn.ask.message",
-            fallback: "Say the question out loud, hear one answer, then update the board."
-        )
-    }
-
-    private var askConsequence: String {
-        localizedHomeCopy(
-            "screen.turn.ask.consequence",
-            fallback: "Elimination only begins after a Yes or No answer."
+            fallback: "Ask it out loud. Then record the answer."
         )
     }
 
     private var chooseAskTitle: String {
-        localizedHomeCopy("screen.turn.ask.cta", fallback: "Choose Ask")
-    }
-
-    private var guessSubtitle: String {
-        localizedHomeCopy("screen.turn.guess.subtitle", fallback: "Risky turn")
-    }
-
-    private var guessConsequence: String {
-        localizedHomeCopy("screen.turn.guess.consequence", fallback: "A wrong guess ends the turn at once.")
-    }
-
-    private var answerPrivacyTitle: String {
-        localizedHomeCopy("screen.answer.notice.title", fallback: "Answer step")
-    }
-
-    private var answerPrivacyMessage: String {
-        localizedHomeCopy(
-            "screen.answer.notice.message",
-            fallback: "The board stays locked until the other player gives one Yes or No answer."
-        )
+        localizedHomeCopy("screen.turn.ask.cta", fallback: "Ask a Question")
     }
 
     private var askModeLabel: String {
-        localizedHomeCopy("screen.answer.label", fallback: "Ask Mode")
+        localizedHomeCopy("screen.answer.label", fallback: "Ask")
     }
 
     private var answerInstruction: String {
         localizedHomeCopy(
             "screen.answer.instruction",
-            fallback: "When the other player answers, tap the matching button to unlock elimination."
+            fallback: "Tap Yes or No after they answer."
         )
     }
 
     private var donePassPhoneTitle: String {
-        localizedHomeCopy("screen.elimination.cta", fallback: "Done, Pass Phone")
+        localizedHomeCopy("screen.elimination.cta", fallback: "Pass the Phone")
     }
 
     private var finalGuessLabel: String {
-        localizedHomeCopy("screen.guess.label", fallback: "Final Guess")
-    }
-
-    private var finalGuessTitle: String {
-        localizedHomeCopy("screen.guess.title", fallback: "Tap one portrait to submit your guess")
+        localizedHomeCopy("screen.guess.label", fallback: "Guess")
     }
 
     private var finalGuessMessage: String {
         localizedHomeCopy(
             "screen.guess.message",
-            fallback: "This is the only action for the turn now. A wrong guess ends the turn immediately."
+            fallback: "A wrong guess ends your turn."
         )
     }
 
     private var finalGuessBackoutMessage: String {
         localizedHomeCopy(
             "screen.guess.backout",
-            fallback: "Need to back out before committing? Switch back now."
+            fallback: "Want to ask instead?"
         )
     }
 
     private var chooseAskInsteadTitle: String {
-        localizedHomeCopy("screen.guess.back", fallback: "Choose Ask Instead")
+        localizedHomeCopy("screen.guess.back", fallback: "Ask Instead")
     }
 
     private var roundResultLabel: String {
-        localizedHomeCopy("screen.result.label", fallback: "Round Result")
+        localizedHomeCopy("screen.result.label", fallback: "Round Over")
     }
 
     private var backToHomeTitle: String {
-        localizedHomeCopy("screen.result.home", fallback: "Back to Home")
+        localizedHomeCopy("screen.result.home", fallback: "Home")
     }
 
     private var homeLanguageLabel: String {
@@ -293,13 +283,17 @@ struct ContentView: View {
             ZStack {
                 backgroundLayer
 
-                switch gameState.appScreen {
-                case .menu:
-                    menuScreen
-                case .rules:
-                    rulesScreen
-                case .game:
-                    gameScreen
+                if showsPlayerSetup {
+                    playerSetupScreen
+                } else {
+                    switch gameState.appScreen {
+                    case .menu:
+                        menuScreen
+                    case .rules:
+                        rulesScreen
+                    case .game:
+                        gameScreen
+                    }
                 }
             }
             .id(activeHomeLanguage.rawValue)
@@ -308,7 +302,7 @@ struct ContentView: View {
         .alert(homeAlertTitle, isPresented: $showsNewGameConfirmation) {
             Button(homeAlertCancel, role: .cancel) {}
             Button(homeAlertConfirm, role: .destructive) {
-                gameState.startNewGame()
+                showsPlayerSetup = true
             }
         } message: {
             Text(homeAlertMessage)
@@ -347,6 +341,11 @@ struct ContentView: View {
     private var menuScreen: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 20) {
+                Text(homeTitle)
+                    .font(StudioTypography.brandTitle)
+                    .foregroundStyle(StudioTheme.ink)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
                 menuHero
 
                 if gameState.hasRoundInProgress {
@@ -368,21 +367,6 @@ struct ContentView: View {
     private var menuHero: some View {
         surface(fill: StudioTheme.card, border: StudioTheme.line.opacity(0.8), shadow: StudioTheme.shadowStrong) {
             VStack(alignment: .leading, spacing: 22) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(homeTitle)
-                        .font(StudioTypography.displaySmall)
-                        .foregroundStyle(StudioTheme.ink)
-
-                    Text(homeOverview)
-                        .font(StudioTypography.subheadline)
-                        .foregroundStyle(StudioTheme.inkSoft)
-
-                    Text(homeSummary)
-                        .font(StudioTypography.footnote)
-                        .foregroundStyle(StudioTheme.muted)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
                 VStack(spacing: 12) {
                     menuButton(
                         title: homeStartTitle,
@@ -410,6 +394,67 @@ struct ContentView: View {
 
                 homeLanguageToggle
             }
+        }
+    }
+
+    private var playerSetupScreen: some View {
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(spacing: 20) {
+                HStack {
+                    Button(action: { showsPlayerSetup = false }) {
+                        Label(homePlayersBackTitle, systemImage: "chevron.left")
+                            .font(StudioTypography.subheadline)
+                            .foregroundStyle(StudioTheme.ink)
+                    }
+                    .buttonStyle(.plain)
+
+                    Spacer()
+                }
+
+                surface(fill: StudioTheme.card, border: StudioTheme.line.opacity(0.8), shadow: StudioTheme.shadowStrong) {
+                    VStack(alignment: .leading, spacing: 24) {
+                        HStack(alignment: .top, spacing: 12) {
+                            iconStamp(systemImage: "person.2.fill", accent: StudioTheme.gold)
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(homePlayersTitle)
+                                    .font(StudioTypography.title)
+                                    .foregroundStyle(StudioTheme.ink)
+
+                                Text(homePlayersMessage)
+                                    .font(StudioTypography.footnote)
+                                    .foregroundStyle(StudioTheme.muted)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
+
+                        VStack(spacing: 12) {
+                            playerNameField(
+                                title: defaultPlayerName(.one),
+                                text: $storedPlayerOneName,
+                                accent: StudioTheme.teal
+                            )
+
+                            playerNameField(
+                                title: defaultPlayerName(.two),
+                                text: $storedPlayerTwoName,
+                                accent: StudioTheme.coral
+                            )
+                        }
+
+                        menuButton(
+                            title: homePlayersStartTitle,
+                            systemImage: "play.fill",
+                            style: .filled(StudioTheme.coral),
+                            action: startGameFromPlayerSetup
+                        )
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 72)
+            .padding(.bottom, 28)
+            .frame(maxWidth: .infinity)
         }
     }
 
@@ -515,8 +560,8 @@ struct ContentView: View {
         switch gameState.phase {
         case .selectingSecret(let player):
             secretSelectionScreen(for: player)
-        case .handoff(_, let toPlayer, let reason):
-            handoffScreen(to: toPlayer, reason: reason)
+        case .handoff(_, let toPlayer, _):
+            handoffScreen(to: toPlayer)
         case .choosingTurnAction(let player):
             turnChoiceScreen(for: player)
         case .awaitingAnswer(let player):
@@ -527,7 +572,6 @@ struct ContentView: View {
             gameplayBoardScreen(
                 for: player,
                 label: finalGuessLabel,
-                title: finalGuessTitle,
                 message: finalGuessMessage,
                 accent: StudioTheme.coral,
                 mode: .guess
@@ -560,14 +604,6 @@ struct ContentView: View {
                     accent: StudioTheme.teal
                 )
 
-                stageHeader(
-                    label: privatePickLabel,
-                    title: secretStageTitle(for: player),
-                    message: secretStageMessage,
-                    accent: StudioTheme.teal,
-                    player: nil
-                )
-
                 characterBoard(for: player, mode: .selectSecret)
             }
             .padding(.horizontal, 20)
@@ -576,10 +612,7 @@ struct ContentView: View {
         }
     }
 
-    private func handoffScreen(
-        to player: GameState.Player,
-        reason: GameState.HandoffReason
-    ) -> some View {
+    private func handoffScreen(to player: GameState.Player) -> some View {
         ZStack {
             LinearGradient(
                 colors: [StudioTheme.handoffTop, StudioTheme.handoffBottom],
@@ -598,7 +631,7 @@ struct ContentView: View {
                 Spacer()
 
                 surface(padding: 28, fill: StudioTheme.handoffCard, border: StudioTheme.handoffLine, shadow: StudioTheme.shadowStrong) {
-                    VStack(spacing: 22) {
+                    VStack(spacing: 24) {
                         ZStack {
                             Circle()
                                 .fill(StudioTheme.coral.opacity(0.16))
@@ -609,30 +642,18 @@ struct ContentView: View {
                                 .foregroundStyle(StudioTheme.coral)
                         }
 
-                        VStack(spacing: 10) {
-                            capsuleLabel(privacyHandoffLabel.uppercased(), accent: StudioTheme.gold)
+                        Text(handoffTitle(for: player))
+                            .font(StudioTypography.displaySmall)
+                            .foregroundStyle(StudioTheme.ink)
+                            .multilineTextAlignment(.center)
 
-                            Text(handoffTitle(for: player, reason: reason))
-                                .font(StudioTypography.displaySmall)
-                                .foregroundStyle(StudioTheme.ink)
-                                .multilineTextAlignment(.center)
-
-                            Text(handoffMessage(for: player, reason: reason))
-                                .font(StudioTypography.body)
-                                .foregroundStyle(StudioTheme.inkSoft)
-                                .multilineTextAlignment(.center)
-                        }
-
-                        Text(onlyPlayerContinueTitle(for: player))
-                            .font(StudioTypography.subheadline)
-                            .foregroundStyle(StudioTheme.muted)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 10)
-                            .background(StudioTheme.softWash)
-                            .clipShape(Capsule())
+                        Text(handoffMessage(for: player))
+                            .font(StudioTypography.body)
+                            .foregroundStyle(StudioTheme.inkSoft)
+                            .multilineTextAlignment(.center)
 
                         menuButton(
-                            title: startMyTurnTitle,
+                            title: handoffContinueTitle(for: player),
                             systemImage: "person.fill.checkmark",
                             style: .filled(StudioTheme.coral),
                             action: gameState.continueAfterHandoff
@@ -654,17 +675,16 @@ struct ContentView: View {
                     label: turnStartLabel,
                     title: turnChoiceTitle(for: player),
                     message: turnChoiceMessage(for: player),
-                    accent: StudioTheme.teal,
-                    player: player
+                    accent: StudioTheme.teal
                 )
+
+                questionNotesPanel(for: player)
 
                 decisionCard(
                     title: askTitle,
-                    subtitle: askSubtitle,
                     message: askMessage,
                     accent: StudioTheme.teal,
                     systemImage: "text.bubble.fill",
-                    consequence: askConsequence,
                     buttonTitle: chooseAskTitle,
                     buttonStyle: .filled(StudioTheme.teal),
                     action: gameState.chooseAskQuestion
@@ -672,11 +692,9 @@ struct ContentView: View {
 
                 decisionCard(
                     title: guessDecisionTitle(for: player),
-                    subtitle: guessSubtitle,
                     message: guessDecisionMessage(for: player),
                     accent: StudioTheme.coral,
                     systemImage: "scope",
-                    consequence: guessConsequence,
                     buttonTitle: guessDecisionButtonTitle(for: player),
                     buttonStyle: .outlined(StudioTheme.coral),
                     action: gameState.chooseMakeGuess
@@ -689,54 +707,16 @@ struct ContentView: View {
     }
 
     private func answerStepScreen(for player: GameState.Player) -> some View {
-        VStack(spacing: 24) {
-            privacyNotice(
-                title: answerPrivacyTitle,
-                message: answerPrivacyMessage,
-                accent: StudioTheme.teal
-            )
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 18) {
+                stageHeader(
+                    label: askModeLabel,
+                    title: answerStepTitle(for: player),
+                    message: answerInstruction,
+                    accent: StudioTheme.teal
+                )
 
-            Spacer(minLength: 0)
-
-            surface(fill: StudioTheme.card, border: StudioTheme.line.opacity(0.9), shadow: StudioTheme.shadowStrong) {
-                VStack(alignment: .leading, spacing: 18) {
-                    capsuleLabel(askModeLabel.uppercased(), accent: StudioTheme.teal)
-
-                    Text(answerStepTitle(for: player))
-                        .font(StudioTypography.displaySmall)
-                        .foregroundStyle(StudioTheme.ink)
-
-                    Text(answerInstruction)
-                        .font(StudioTypography.body)
-                        .foregroundStyle(StudioTheme.muted)
-
-                    HStack(spacing: 12) {
-                        summaryChip(title: playerChipTitle, value: playerName(player), accent: StudioTheme.teal)
-                        summaryChip(
-                            title: suspectsLeftTitle,
-                            value: "\(gameState.remainingCharacters(for: player).count)",
-                            accent: StudioTheme.gold
-                        )
-                    }
-                }
-            }
-
-            VStack(spacing: 12) {
-                HStack(spacing: 12) {
-                    menuButton(
-                        title: yesTitle,
-                        systemImage: "checkmark.circle.fill",
-                        style: .filled(StudioTheme.teal),
-                        action: { gameState.recordAnswer(true) }
-                    )
-
-                    menuButton(
-                        title: noTitle,
-                        systemImage: "xmark.circle.fill",
-                        style: .filled(StudioTheme.coral),
-                        action: { gameState.recordAnswer(false) }
-                    )
-                }
+                questionNotesPanel(for: player, includesDraft: true)
 
                 menuButton(
                     title: backTitle,
@@ -745,12 +725,10 @@ struct ContentView: View {
                     action: gameState.returnToTurnChoice
                 )
             }
-
-            Spacer(minLength: 0)
+            .padding(.horizontal, 20)
+            .padding(.top, 18)
+            .padding(.bottom, 28)
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 18)
-        .padding(.bottom, 28)
     }
 
     private func eliminationScreen(
@@ -760,7 +738,6 @@ struct ContentView: View {
         gameplayBoardScreen(
             for: player,
             label: eliminationLabel(for: answer),
-            title: eliminationTitle(for: answer),
             message: eliminationMessage(for: player, answer: answer),
             accent: answer ? StudioTheme.teal : StudioTheme.coral,
             mode: .eliminate
@@ -786,7 +763,6 @@ struct ContentView: View {
     private func gameplayBoardScreen<Footer: View>(
         for player: GameState.Player,
         label: String,
-        title: String,
         message: String,
         accent: Color,
         mode: CharacterCard.Mode,
@@ -797,10 +773,11 @@ struct ContentView: View {
                 gameplayHeader(
                     player: player,
                     label: label,
-                    title: title,
                     message: message,
                     accent: accent
                 )
+
+                questionNotesPanel(for: player)
 
                 characterBoard(for: player, mode: mode)
             }
@@ -823,13 +800,12 @@ struct ContentView: View {
                     label: roundResultLabel,
                     title: gameOverTitle(for: winner),
                     message: gameOverMessage(for: reason),
-                    accent: StudioTheme.coral,
-                    player: nil
+                    accent: StudioTheme.coral
                 )
 
                 HStack(spacing: 12) {
-                    summaryChip(title: playerOneSecretTitle, value: gameState.secretCharacter(for: .one)?.name ?? unknownTitle, accent: StudioTheme.teal)
-                    summaryChip(title: playerTwoSecretTitle, value: gameState.secretCharacter(for: .two)?.name ?? unknownTitle, accent: StudioTheme.coral)
+                    summaryChip(title: playerSecretTitle(for: .one), value: gameState.secretCharacter(for: .one)?.name ?? unknownTitle, accent: StudioTheme.teal)
+                    summaryChip(title: playerSecretTitle(for: .two), value: gameState.secretCharacter(for: .two)?.name ?? unknownTitle, accent: StudioTheme.coral)
                 }
 
                 characterBoard(for: winner, mode: .reveal)
@@ -860,91 +836,65 @@ struct ContentView: View {
         label: String,
         title: String,
         message: String,
-        accent: Color,
-        player: GameState.Player?
+        accent: Color
     ) -> some View {
-        surface(fill: StudioTheme.card, border: accent.opacity(0.16), shadow: StudioTheme.shadowSoft) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .top, spacing: 16) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        capsuleLabel(label, accent: accent)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 16) {
+                VStack(alignment: .leading, spacing: 10) {
+                    capsuleLabel(label, accent: accent)
 
-                        Text(title)
-                            .font(StudioTypography.displaySmall)
-                            .foregroundStyle(StudioTheme.ink)
-                    }
-
-                    Spacer()
-
-                    compactMenuButton(menuTitle, systemImage: "house", action: gameState.showMenu)
+                    Text(title)
+                        .font(StudioTypography.displaySmall)
+                        .foregroundStyle(StudioTheme.ink)
                 }
 
-                Text(message)
-                    .font(StudioTypography.body)
-                    .foregroundStyle(StudioTheme.muted)
+                Spacer()
 
-                if let player {
-                    HStack(spacing: 12) {
-                        summaryChip(title: playerChipTitle, value: playerName(player), accent: accent)
-                        summaryChip(
-                            title: leftChipTitle,
-                            value: "\(gameState.remainingCharacters(for: player).count)",
-                            accent: StudioTheme.teal
-                        )
-                        summaryChip(
-                            title: outChipTitle,
-                            value: "\(gameState.eliminatedCount(for: player))",
-                            accent: StudioTheme.coral
-                        )
-                    }
-                }
+                compactMenuButton(menuTitle, systemImage: "house", action: gameState.showMenu)
             }
+
+            Text(message)
+                .font(StudioTypography.body)
+                .foregroundStyle(StudioTheme.muted)
         }
     }
 
     private func gameplayHeader(
         player: GameState.Player,
         label: String,
-        title: String,
         message: String,
         accent: Color
     ) -> some View {
-        surface(fill: StudioTheme.card, border: accent.opacity(0.16), shadow: StudioTheme.shadowSoft) {
-            VStack(alignment: .leading, spacing: 14) {
-                HStack(alignment: .top, spacing: 12) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        capsuleLabel(label, accent: accent)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 8) {
+                    capsuleLabel(label, accent: accent)
 
-                        Text(playerName(player))
-                            .font(StudioTypography.titleLarge)
-                            .foregroundStyle(StudioTheme.ink)
-
-                        Text(title)
-                            .font(StudioTypography.title)
-                            .foregroundStyle(StudioTheme.ink)
-                    }
-
-                    Spacer()
-
-                    compactMenuButton(menuTitle, systemImage: "house", action: gameState.showMenu)
+                    Text(playerName(player))
+                        .font(StudioTypography.titleLarge)
+                        .foregroundStyle(StudioTheme.ink)
                 }
 
-                Text(message)
-                    .font(StudioTypography.body)
-                    .foregroundStyle(StudioTheme.muted)
+                Spacer()
 
-                HStack(spacing: 12) {
-                    summaryChip(
-                        title: suspectsLeftTitle,
-                        value: "\(gameState.remainingCharacters(for: player).count)",
-                        accent: StudioTheme.teal
-                    )
-                    summaryChip(
-                        title: eliminatedTitle,
-                        value: "\(gameState.eliminatedCount(for: player))",
-                        accent: StudioTheme.coral
-                    )
-                }
+                compactMenuButton(menuTitle, systemImage: "house", action: gameState.showMenu)
+            }
+
+            Text(message)
+                .font(StudioTypography.footnote)
+                .foregroundStyle(StudioTheme.muted)
+
+            HStack(spacing: 12) {
+                summaryChip(
+                    title: suspectsLeftTitle,
+                    value: "\(gameState.remainingCharacters(for: player).count)",
+                    accent: StudioTheme.teal
+                )
+                summaryChip(
+                    title: eliminatedTitle,
+                    value: "\(gameState.eliminatedCount(for: player))",
+                    accent: StudioTheme.coral
+                )
             }
         }
     }
@@ -971,77 +921,160 @@ struct ContentView: View {
         }
     }
 
-    private func featureRow(
+    private func decisionCard(
         title: String,
         message: String,
-        tint: Color,
-        icon: String
+        accent: Color,
+        systemImage: String,
+        buttonTitle: String,
+        buttonStyle: ActionButtonStyle.Kind,
+        action: @escaping () -> Void
     ) -> some View {
-        surface(fill: StudioTheme.card, border: tint.opacity(0.14), shadow: StudioTheme.shadowSoft) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 14) {
-                iconStamp(systemImage: icon, accent: tint)
+                iconStamp(systemImage: systemImage, accent: accent)
 
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(StudioTypography.title)
                         .foregroundStyle(StudioTheme.ink)
 
                     Text(message)
-                        .font(StudioTypography.body)
+                        .font(StudioTypography.footnote)
                         .foregroundStyle(StudioTheme.muted)
+                }
+            }
+
+            menuButton(
+                title: buttonTitle,
+                systemImage: systemImage,
+                style: buttonStyle,
+                action: action
+            )
+        }
+    }
+
+    private func questionNotesPanel(
+        for player: GameState.Player,
+        includesDraft: Bool = false
+    ) -> some View {
+        let notes = gameState.questionNotes(for: player)
+
+        return surface(padding: 16, fill: Color.white.opacity(0.72), border: StudioTheme.line.opacity(0.65), shadow: .clear) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .top, spacing: 12) {
+                    iconStamp(systemImage: "note.text", accent: StudioTheme.gold)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(notesTitle)
+                            .font(StudioTypography.title)
+                            .foregroundStyle(StudioTheme.ink)
+
+                        Text(notesMessage)
+                            .font(StudioTypography.footnote)
+                            .foregroundStyle(StudioTheme.muted)
+                    }
+                }
+
+                if notes.isEmpty && !includesDraft {
+                    Text(notesEmptyMessage)
+                        .font(StudioTypography.footnote)
+                        .foregroundStyle(StudioTheme.muted)
+                }
+
+                VStack(spacing: 10) {
+                    ForEach(notes) { note in
+                        questionNoteRow(
+                            stepTitle: stepTitle(for: note.stepNumber),
+                            question: savedQuestionBinding(for: player, noteID: note.id),
+                            selectedAnswer: note.answer,
+                            onSelectYes: {
+                                gameState.updateQuestionNoteAnswer(true, noteID: note.id, for: player)
+                            },
+                            onSelectNo: {
+                                gameState.updateQuestionNoteAnswer(false, noteID: note.id, for: player)
+                            }
+                        )
+                    }
+
+                    if includesDraft {
+                        questionNoteRow(
+                            stepTitle: stepTitle(for: gameState.nextQuestionStep(for: player)),
+                            question: draftQuestionBinding(for: player),
+                            selectedAnswer: nil,
+                            onSelectYes: { gameState.recordAnswer(true) },
+                            onSelectNo: { gameState.recordAnswer(false) }
+                        )
+                    }
                 }
             }
         }
     }
 
-    private func decisionCard(
-        title: String,
-        subtitle: String,
-        message: String,
-        accent: Color,
-        systemImage: String,
-        consequence: String,
-        buttonTitle: String,
-        buttonStyle: ActionButtonStyle.Kind,
-        action: @escaping () -> Void
+    private func questionNoteRow(
+        stepTitle: String,
+        question: Binding<String>,
+        selectedAnswer: Bool?,
+        onSelectYes: @escaping () -> Void,
+        onSelectNo: @escaping () -> Void
     ) -> some View {
-        surface(fill: StudioTheme.card, border: accent.opacity(0.14), shadow: StudioTheme.shadowSoft) {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack(alignment: .top, spacing: 14) {
-                    iconStamp(systemImage: systemImage, accent: accent)
+        VStack(alignment: .leading, spacing: 8) {
+            Text(stepTitle.uppercased())
+                .font(StudioTypography.label)
+                .foregroundStyle(StudioTheme.muted)
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(subtitle.uppercased())
-                            .font(StudioTypography.label)
-                            .foregroundStyle(accent)
-
-                        Text(title)
-                            .font(StudioTypography.titleLarge)
-                            .foregroundStyle(StudioTheme.ink)
-
-                        Text(message)
-                            .font(StudioTypography.body)
-                            .foregroundStyle(StudioTheme.muted)
-                    }
-                }
-
-                Text(consequence)
-                    .font(StudioTypography.subheadline)
-                    .foregroundStyle(StudioTheme.inkSoft)
+            HStack(spacing: 10) {
+                TextField(notesQuestionPlaceholder, text: question)
+                    .font(StudioTypography.body)
+                    .foregroundStyle(StudioTheme.ink)
+                    .textInputAutocapitalization(.sentences)
+                    .disableAutocorrection(false)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 12)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(accent.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                    .background(Color.white.opacity(0.92))
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(StudioTheme.line.opacity(0.85), lineWidth: 1)
+                    }
 
-                menuButton(
-                    title: buttonTitle,
-                    systemImage: systemImage,
-                    style: buttonStyle,
-                    action: action
+                noteAnswerButton(
+                    title: yesTitle,
+                    isSelected: selectedAnswer == true,
+                    accent: StudioTheme.teal,
+                    action: onSelectYes
+                )
+
+                noteAnswerButton(
+                    title: noTitle,
+                    isSelected: selectedAnswer == false,
+                    accent: StudioTheme.coral,
+                    action: onSelectNo
                 )
             }
         }
+    }
+
+    private func noteAnswerButton(
+        title: String,
+        isSelected: Bool,
+        accent: Color,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(StudioTypography.label)
+                .foregroundStyle(isSelected ? Color.white : accent)
+                .frame(width: 54, height: 48)
+                .background(isSelected ? accent : Color.white.opacity(0.82))
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(accent.opacity(isSelected ? 0 : 0.45), lineWidth: 1)
+                }
+        }
+        .buttonStyle(.plain)
     }
 
     private func characterBoard(
@@ -1138,6 +1171,32 @@ struct ContentView: View {
         }
     }
 
+    private func playerNameField(
+        title: String,
+        text: Binding<String>,
+        accent: Color
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title.uppercased())
+                .font(StudioTypography.label)
+                .foregroundStyle(StudioTheme.muted)
+
+            TextField(homePlayersPlaceholder, text: text)
+                .font(StudioTypography.body)
+                .foregroundStyle(StudioTheme.ink)
+                .textInputAutocapitalization(.words)
+                .disableAutocorrection(true)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(Color.white.opacity(0.92))
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(accent.opacity(0.2), lineWidth: 1)
+                }
+        }
+    }
+
     private func menuButton(
         title: String,
         systemImage: String,
@@ -1172,16 +1231,6 @@ struct ContentView: View {
         .buttonStyle(.plain)
     }
 
-    private func featureChip(_ title: String) -> some View {
-        Text(title)
-            .font(StudioTypography.label)
-            .foregroundStyle(StudioTheme.inkSoft)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 9)
-            .background(Color.white.opacity(0.62))
-            .clipShape(Capsule())
-    }
-
     private func capsuleLabel(_ title: String, accent: Color) -> some View {
         Text(title)
             .font(StudioTypography.label)
@@ -1190,12 +1239,6 @@ struct ContentView: View {
             .padding(.vertical, 8)
             .background(accent.opacity(0.1))
             .clipShape(Capsule())
-    }
-
-    private func sectionTitle(_ text: String) -> some View {
-        Text(text)
-            .font(StudioTypography.titleLarge)
-            .foregroundStyle(StudioTheme.ink)
     }
 
     private func summaryChip(title: String, value: String, accent: Color) -> some View {
@@ -1263,36 +1306,36 @@ struct ContentView: View {
         switch mode {
         case .selectSecret:
             return (
-                title: localizedHomeCopy("board.secret.title", fallback: "Secret board"),
-                message: localizedHomeCopy("board.secret.message", fallback: "Tap one portrait to choose it as your hidden character."),
+                title: localizedHomeCopy("board.secret.title", fallback: "Pick a secret"),
+                message: localizedHomeCopy("board.secret.message", fallback: "Tap one face."),
                 accent: StudioTheme.teal,
                 icon: "person.crop.square.fill"
             )
         case .eliminate:
             return (
-                title: localizedHomeCopy("board.suspect.title", fallback: "Suspect board"),
-                message: localizedHomeCopy("board.suspect.message", fallback: "Tap portraits to hide or restore them as you narrow the field."),
+                title: localizedHomeCopy("board.suspect.title", fallback: "Your board"),
+                message: localizedHomeCopy("board.suspect.message", fallback: "Tap faces to cross them off or bring them back."),
                 accent: StudioTheme.teal,
                 icon: "eye.slash.circle.fill"
             )
         case .guess:
             return (
-                title: localizedHomeCopy("board.guess.title", fallback: "Final guess board"),
-                message: localizedHomeCopy("board.guess.message", fallback: "Tapping a portrait submits the guess immediately."),
+                title: localizedHomeCopy("board.guess.title", fallback: "Make your guess"),
+                message: localizedHomeCopy("board.guess.message", fallback: "Tap one face."),
                 accent: StudioTheme.coral,
                 icon: "scope"
             )
         case .inactive:
             return (
                 title: localizedHomeCopy("board.default.title", fallback: "Board"),
-                message: guessWhoLocalizedFormat("board.default.message", fallback: "%@'s portraits.", playerName(player)),
+                message: guessWhoLocalizedFormat("board.default.message", fallback: "%@'s board.", playerName(player)),
                 accent: StudioTheme.gold,
                 icon: "square.grid.2x2.fill"
             )
         case .reveal:
             return (
                 title: localizedHomeCopy("board.result.title", fallback: "Final board"),
-                message: localizedHomeCopy("board.result.message", fallback: "The round is over. Remaining portraits show the winner's final view."),
+                message: localizedHomeCopy("board.result.message", fallback: "The winning board at the end of the round."),
                 accent: StudioTheme.gold,
                 icon: "sparkles"
             )
@@ -1303,14 +1346,19 @@ struct ContentView: View {
         if gameState.hasRoundInProgress {
             showsNewGameConfirmation = true
         } else {
-            gameState.startNewGame()
+            showsPlayerSetup = true
         }
+    }
+
+    private func startGameFromPlayerSetup() {
+        showsPlayerSetup = false
+        gameState.startNewGame()
     }
 
     private var homeLiveRoundMessage: String {
         let format = localizedHomeCopy(
             "home.live_round.message",
-            fallback: "%@ secrets locked. Resume if you want to keep playing."
+            fallback: "%@ secrets picked. Jump back in."
         )
         return String.localizedStringWithFormat(format, secretsLockedValue)
     }
@@ -1320,6 +1368,15 @@ struct ContentView: View {
     }
 
     private func playerName(_ player: GameState.Player) -> String {
+        let customName = trimmedPlayerName(for: player)
+        if !customName.isEmpty {
+            return customName
+        }
+
+        return defaultPlayerName(player)
+    }
+
+    private func defaultPlayerName(_ player: GameState.Player) -> String {
         switch player {
         case .one:
             return localizedHomeCopy("home.player.one", fallback: "Player 1")
@@ -1328,10 +1385,23 @@ struct ContentView: View {
         }
     }
 
+    private func trimmedPlayerName(for player: GameState.Player) -> String {
+        let rawName: String
+
+        switch player {
+        case .one:
+            rawName = storedPlayerOneName
+        case .two:
+            rawName = storedPlayerTwoName
+        }
+
+        return rawName.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
     private var secretPrivacyMessage: String {
         localizedHomeCopy(
             "screen.secret.notice.message",
-            fallback: "Keep the phone to yourself. Tapping a portrait locks it in right away."
+            fallback: "Make your pick in private."
         )
     }
 
@@ -1339,36 +1409,24 @@ struct ContentView: View {
         guessWhoLocalizedFormat("screen.secret.notice.title", fallback: "%@ only", playerName(player))
     }
 
-    private func secretStageTitle(for player: GameState.Player) -> String {
-        guessWhoLocalizedFormat("screen.secret.title", fallback: "%@, choose your secret", playerName(player))
+    private func handoffTitle(for player: GameState.Player) -> String {
+        guessWhoLocalizedFormat(
+            "screen.handoff.title",
+            fallback: "Pass the phone to %@",
+            playerName(player)
+        )
     }
 
-    private var secretStageMessage: String {
-        localizedHomeCopy("screen.secret.message", fallback: "Pick one face quietly, then pass the phone when prompted.")
+    private func handoffMessage(for player: GameState.Player) -> String {
+        guessWhoLocalizedFormat(
+            "screen.handoff.message",
+            fallback: "%@, tap below when you are ready.",
+            playerName(player)
+        )
     }
 
-    private func handoffTitle(for player: GameState.Player, reason: GameState.HandoffReason) -> String {
-        switch reason {
-        case .secretSelected:
-            return guessWhoLocalizedFormat("screen.handoff.secret.title", fallback: "Pass to %@", playerName(player))
-        case .turnPassed:
-            return guessWhoLocalizedFormat("screen.handoff.turn.title", fallback: "%@, take the phone", playerName(player))
-        case .wrongGuess:
-            return localizedHomeCopy("screen.handoff.wrong.title", fallback: "Wrong guess")
-        }
-    }
-
-    private func handoffMessage(for player: GameState.Player, reason: GameState.HandoffReason) -> String {
-        switch reason {
-        case .secretSelected:
-            return guessWhoLocalizedFormat("screen.handoff.secret.message", fallback: "%@ should be the only one looking.", playerName(player))
-        case .turnPassed, .wrongGuess:
-            return guessWhoLocalizedFormat("screen.handoff.turn.message", fallback: "%@ starts the next turn in private.", playerName(player))
-        }
-    }
-
-    private func onlyPlayerContinueTitle(for player: GameState.Player) -> String {
-        guessWhoLocalizedFormat("screen.handoff.only", fallback: "Only %@ should continue.", playerName(player))
+    private func handoffContinueTitle(for player: GameState.Player) -> String {
+        guessWhoLocalizedFormat("screen.handoff.cta", fallback: "I am %@", playerName(player))
     }
 
     private func guessDecisionTitle(for player: GameState.Player) -> String {
@@ -1383,44 +1441,38 @@ struct ContentView: View {
         if gameState.remainingCharacters(for: player).count == 1 {
             return localizedHomeCopy(
                 "screen.turn.guess.final_message",
-                fallback: "One suspect remains. Tap through to make the explicit final guess."
+                fallback: "One face left. Make the final guess."
             )
         }
 
         return localizedHomeCopy(
             "screen.turn.guess.message",
-            fallback: "Enter guess mode and tap one portrait to submit immediately."
+            fallback: "Open guess mode, then tap one face."
         )
     }
 
     private func guessDecisionButtonTitle(for player: GameState.Player) -> String {
         if gameState.remainingCharacters(for: player).count == 1 {
-            return localizedHomeCopy("screen.turn.guess.final_cta", fallback: "Commit to Final Guess")
+            return localizedHomeCopy("screen.turn.guess.final_cta", fallback: "Make Final Guess")
         }
 
-        return localizedHomeCopy("screen.turn.guess.cta", fallback: "Choose Guess")
+        return localizedHomeCopy("screen.turn.guess.cta", fallback: "Make a Guess")
     }
 
     private func answerStepTitle(for player: GameState.Player) -> String {
-        guessWhoLocalizedFormat("screen.answer.title", fallback: "%@, ask out loud", playerName(player))
+        guessWhoLocalizedFormat("screen.answer.title", fallback: "%@, ask your question", playerName(player))
     }
 
     private func eliminationLabel(for answer: Bool) -> String {
         answer
-            ? localizedHomeCopy("screen.elimination.yes.label", fallback: "Answer: Yes")
-            : localizedHomeCopy("screen.elimination.no.label", fallback: "Answer: No")
-    }
-
-    private func eliminationTitle(for answer: Bool) -> String {
-        answer
-            ? localizedHomeCopy("screen.elimination.yes.title", fallback: "Update the board to match the yes answer")
-            : localizedHomeCopy("screen.elimination.no.title", fallback: "Update the board to match the no answer")
+            ? localizedHomeCopy("screen.elimination.yes.label", fallback: "Yes")
+            : localizedHomeCopy("screen.elimination.no.label", fallback: "No")
     }
 
     private var eliminationFinalGuessReminder: String {
         localizedHomeCopy(
             "screen.elimination.reminder",
-            fallback: "One suspect remains. Winning still requires an explicit final guess."
+            fallback: "One face left. You still need to guess."
         )
     }
 
@@ -1431,16 +1483,20 @@ struct ContentView: View {
     private func gameOverMessage(for reason: GameState.EndReason) -> String {
         switch reason {
         case .correctGuess(let character):
-            return guessWhoLocalizedFormat("screen.result.message", fallback: "%@ was guessed correctly.", character.name)
+            return guessWhoLocalizedFormat("screen.result.message", fallback: "The answer was %@.", character.name)
         }
     }
 
-    private var playerOneSecretTitle: String {
-        localizedHomeCopy("screen.result.player_one_secret", fallback: "Player 1 Secret")
+    private func playerSecretTitle(for player: GameState.Player) -> String {
+        guessWhoLocalizedFormat(
+            "screen.result.player_secret",
+            fallback: "%@'s secret",
+            playerName(player)
+        )
     }
 
-    private var playerTwoSecretTitle: String {
-        localizedHomeCopy("screen.result.player_two_secret", fallback: "Player 2 Secret")
+    private func stepTitle(for stepNumber: Int) -> String {
+        guessWhoLocalizedFormat("notes.step.title", fallback: "Step %d", stepNumber)
     }
 
     private func boardCountLabel(for player: GameState.Player) -> String {
@@ -1449,6 +1505,27 @@ struct ContentView: View {
 
     private func localizedHomeCopy(_ key: String, fallback: String) -> String {
         guessWhoLocalized(key, fallback: fallback, language: activeHomeLanguage)
+    }
+
+    private func draftQuestionBinding(for player: GameState.Player) -> Binding<String> {
+        Binding(
+            get: { gameState.questionDraft(for: player) },
+            set: { gameState.updateQuestionDraft($0, for: player) }
+        )
+    }
+
+    private func savedQuestionBinding(
+        for player: GameState.Player,
+        noteID: GameState.QuestionNote.ID
+    ) -> Binding<String> {
+        Binding(
+            get: {
+                gameState.questionNotes(for: player)
+                    .first(where: { $0.id == noteID })?
+                    .question ?? ""
+            },
+            set: { gameState.updateQuestionNoteText($0, noteID: noteID, for: player) }
+        )
     }
 
     private var homeLanguageToggle: some View {
@@ -1518,23 +1595,23 @@ struct ContentView: View {
 
     private func turnChoiceTitle(for player: GameState.Player) -> String {
         if gameState.remainingCharacters(for: player).count == 1 {
-            return guessWhoLocalizedFormat("screen.turn.title.final", fallback: "%@, it is final decision time", playerName(player))
+            return guessWhoLocalizedFormat("screen.turn.title.final", fallback: "%@, your call", playerName(player))
         }
 
-        return guessWhoLocalizedFormat("screen.turn.title", fallback: "%@, choose this turn's path", playerName(player))
+        return guessWhoLocalizedFormat("screen.turn.title", fallback: "%@, make your move", playerName(player))
     }
 
     private func turnChoiceMessage(for player: GameState.Player) -> String {
         if gameState.remainingCharacters(for: player).count == 1 {
             return localizedHomeCopy(
                 "screen.turn.message.final",
-                fallback: "One suspect remains. You can still ask again, or you can commit to the explicit final guess."
+                fallback: "One face left. Ask one more question or make the final guess."
             )
         }
 
         return localizedHomeCopy(
             "screen.turn.message",
-            fallback: "Pick one path now. The turn stays clean and focused once you commit."
+            fallback: "Ask a question or make a guess."
         )
     }
 
@@ -1543,11 +1620,11 @@ struct ContentView: View {
         answer: Bool
     ) -> String {
         let lead = answer
-            ? localizedHomeCopy("screen.elimination.message.yes", fallback: "Hide or restore portraits so the board matches the yes answer.")
-            : localizedHomeCopy("screen.elimination.message.no", fallback: "Hide or restore portraits so the board matches the no answer.")
+            ? localizedHomeCopy("screen.elimination.message.yes", fallback: "Hide the faces that do not match Yes.")
+            : localizedHomeCopy("screen.elimination.message.no", fallback: "Hide the faces that do not match No.")
 
         if gameState.remainingCharacters(for: player).count == 1 {
-            return "\(lead) \(localizedHomeCopy("screen.elimination.message.final", fallback: "One portrait left still does not end the round automatically."))"
+            return "\(lead) \(localizedHomeCopy("screen.elimination.message.final", fallback: "One face left does not end the game."))"
         }
 
         return lead
@@ -1904,6 +1981,7 @@ private struct ActionButtonStyle: ButtonStyle {
 private enum StudioTypography {
     static let display = Font.custom("AvenirNext-Heavy", size: 42)
     static let displaySmall = Font.custom("AvenirNext-Heavy", size: 34)
+    static let brandTitle = Font.custom("Yakutovych", size: 64)
     static let titleLarge = Font.custom("AvenirNext-DemiBold", size: 28)
     static let title = Font.custom("AvenirNext-DemiBold", size: 22)
     static let subheadline = Font.custom("AvenirNext-Medium", size: 17)
@@ -1918,14 +1996,11 @@ private enum StudioTypography {
 private enum StudioTheme {
     static let canvasTop = Color(red: 0.985, green: 0.965, blue: 0.925)
     static let canvasBottom = Color(red: 0.949, green: 0.92, blue: 0.872)
-    static let heroTop = Color(red: 0.99, green: 0.965, blue: 0.92)
-    static let heroBottom = Color(red: 0.963, green: 0.924, blue: 0.872)
     static let handoffTop = Color(red: 0.981, green: 0.938, blue: 0.886)
     static let handoffBottom = Color(red: 0.938, green: 0.894, blue: 0.836)
     static let handoffCard = Color.white.opacity(0.9)
     static let handoffLine = Color.white.opacity(0.42)
     static let card = Color(red: 0.997, green: 0.991, blue: 0.979)
-    static let cardWarm = Color(red: 0.985, green: 0.973, blue: 0.948)
     static let boardCard = Color(red: 0.993, green: 0.987, blue: 0.976)
     static let softWash = Color(red: 0.952, green: 0.94, blue: 0.914)
     static let line = Color(red: 0.866, green: 0.823, blue: 0.764)

@@ -1,6 +1,8 @@
 import Foundation
 
 let guessWhoLanguageOverrideKey = "homeLanguageOverride"
+let guessWhoPlayerOneNameKey = "playerOneName"
+let guessWhoPlayerTwoNameKey = "playerTwoName"
 
 enum GuessWhoLanguage: String {
     case english = "en"
