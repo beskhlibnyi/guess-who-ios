@@ -5,6 +5,7 @@ struct ContentView: View {
     @AppStorage(guessWhoLanguageOverrideKey) private var homeLanguageOverride = ""
     @AppStorage(guessWhoPlayerOneNameKey) private var storedPlayerOneName = ""
     @AppStorage(guessWhoPlayerTwoNameKey) private var storedPlayerTwoName = ""
+    @StateObject private var portraitRepository = PortraitImageRepository()
     @State private var showsNewGameConfirmation = false
     @State private var showsPlayerSetup = false
 
@@ -339,6 +340,13 @@ struct ContentView: View {
         GuessWhoLanguage.resolved(override: homeLanguageOverride)
     }
 
+    private var portraitPreloadKey: String {
+        gameState.characters
+            .map(\.portraitAssetName)
+            .sorted()
+            .joined(separator: "|")
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -359,6 +367,9 @@ struct ContentView: View {
             }
             .id(activeHomeLanguage.rawValue)
             .toolbar(.hidden, for: .navigationBar)
+        }
+        .task(id: portraitPreloadKey) {
+            portraitRepository.preloadIfNeeded(for: gameState.characters)
         }
         .alert(homeAlertTitle, isPresented: $showsNewGameConfirmation) {
             Button(homeAlertCancel, role: .cancel) {}
@@ -1336,6 +1347,7 @@ struct ContentView: View {
                     ForEach(gameState.characters) { character in
                         CharacterCard(
                             character: character,
+                            portraitImage: portraitRepository.image(for: character),
                             isEliminated: gameState.isEliminated(character, for: player),
                             mode: mode,
                             onTap: { gameState.handleCharacterTap(character) }
@@ -1752,17 +1764,7 @@ struct ContentView: View {
     }
 
     private func portraitImage(for character: Character) -> UIImage? {
-        guard
-            let url = Bundle.main.url(
-                forResource: character.portraitAssetName,
-                withExtension: "png",
-                subdirectory: "CharacterPortraits"
-            )
-        else {
-            return nil
-        }
-
-        return UIImage(contentsOfFile: url.path)
+        portraitRepository.image(for: character)
     }
 
     private func stepTitle(for stepNumber: Int) -> String {
@@ -1997,6 +1999,7 @@ private struct CharacterCard: View {
     }
 
     let character: Character
+    let portraitImage: UIImage?
     let isEliminated: Bool
     let mode: Mode
     let onTap: () -> Void
@@ -2146,19 +2149,6 @@ private struct CharacterCard: View {
         }
     }
 
-    private var portraitImage: UIImage? {
-        guard
-            let url = Bundle.main.url(
-                forResource: character.portraitAssetName,
-                withExtension: "png",
-                subdirectory: "CharacterPortraits"
-            )
-        else {
-            return nil
-        }
-
-        return UIImage(contentsOfFile: url.path)
-    }
 }
 
 private struct ActionButtonStyle: ButtonStyle {
