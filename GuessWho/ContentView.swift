@@ -100,8 +100,47 @@ struct ContentView: View {
         )
     }
 
+    private var rulesBadgeTitle: String {
+        localizedHomeCopy("rules.badge", fallback: "Quick Guide")
+    }
+
     private var rulesHomeButtonTitle: String {
         localizedHomeCopy("rules.home", fallback: "Home")
+    }
+
+    private var rulesFlowTitle: String {
+        localizedHomeCopy("rules.flow.title", fallback: "Round flow")
+    }
+
+    private var rulesFlowMessage: String {
+        localizedHomeCopy(
+            "rules.flow.message",
+            fallback: "Secret picks happen once. After that, each turn follows the same simple rhythm."
+        )
+    }
+
+    private var rulesQuickPlayersTitle: String {
+        localizedHomeCopy("rules.quick.players.title", fallback: "Players")
+    }
+
+    private var rulesQuickPlayersValue: String {
+        localizedHomeCopy("rules.quick.players.value", fallback: "2")
+    }
+
+    private var rulesQuickSetupTitle: String {
+        localizedHomeCopy("rules.quick.setup.title", fallback: "Setup")
+    }
+
+    private var rulesQuickSetupValue: String {
+        localizedHomeCopy("rules.quick.setup.value", fallback: "1 iPhone")
+    }
+
+    private var rulesQuickGoalTitle: String {
+        localizedHomeCopy("rules.quick.goal.title", fallback: "Goal")
+    }
+
+    private var rulesQuickGoalValue: String {
+        localizedHomeCopy("rules.quick.goal.value", fallback: "Find the secret face")
     }
 
     private var rulesStepOneTitle: String {
@@ -150,8 +189,15 @@ struct ContentView: View {
         )
     }
 
-    private var menuTitle: String {
-        localizedHomeCopy("common.menu", fallback: "Menu")
+    private var rulesTipTitle: String {
+        localizedHomeCopy("rules.tip.title", fallback: "Winning move")
+    }
+
+    private var rulesTipMessage: String {
+        localizedHomeCopy(
+            "rules.tip.message",
+            fallback: "One face left does not end the round. Open Guess mode and name the character to win."
+        )
     }
 
     private var backTitle: String {
@@ -260,6 +306,21 @@ struct ContentView: View {
 
     private var backToHomeTitle: String {
         localizedHomeCopy("screen.result.home", fallback: "Home")
+    }
+
+    private var resultRevealLabel: String {
+        localizedHomeCopy("screen.result.reveal", fallback: "Secret character")
+    }
+
+    private var resultRecapTitle: String {
+        localizedHomeCopy("screen.result.recap.title", fallback: "Round recap")
+    }
+
+    private var resultRecapMessage: String {
+        localizedHomeCopy(
+            "screen.result.recap.message",
+            fallback: "Both secrets are revealed before the next round."
+        )
     }
 
     private var homeLanguageLabel: String {
@@ -491,14 +552,18 @@ struct ContentView: View {
                     VStack(alignment: .leading, spacing: 24) {
                         HStack(alignment: .top, spacing: 12) {
                             VStack(alignment: .leading, spacing: 10) {
-                                Text(rulesPageTitle)
-                                    .font(StudioTypography.displaySmall)
-                                    .foregroundStyle(StudioTheme.ink)
+                                capsuleLabel(rulesBadgeTitle, accent: StudioTheme.gold)
 
-                                Text(rulesPageSubtitle)
-                                    .font(StudioTypography.subheadline)
-                                    .foregroundStyle(StudioTheme.muted)
-                                    .fixedSize(horizontal: false, vertical: true)
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text(rulesPageTitle)
+                                        .font(StudioTypography.displaySmall)
+                                        .foregroundStyle(StudioTheme.ink)
+
+                                    Text(rulesPageSubtitle)
+                                        .font(StudioTypography.subheadline)
+                                        .foregroundStyle(StudioTheme.muted)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
                             }
 
                             Spacer()
@@ -506,27 +571,102 @@ struct ContentView: View {
                             compactMenuButton(rulesHomeButtonTitle, systemImage: "house", action: gameState.showMenu)
                         }
 
-                        VStack(spacing: 10) {
-                            ruleStep(
-                                number: "1",
-                                title: rulesStepOneTitle,
-                                message: rulesStepOneMessage
+                        VStack(spacing: 12) {
+                            HStack(spacing: 12) {
+                                summaryChip(
+                                    title: rulesQuickPlayersTitle,
+                                    value: rulesQuickPlayersValue,
+                                    accent: StudioTheme.teal
+                                )
+                                summaryChip(
+                                    title: rulesQuickSetupTitle,
+                                    value: rulesQuickSetupValue,
+                                    accent: StudioTheme.gold
+                                )
+                            }
+
+                            summaryChip(
+                                title: rulesQuickGoalTitle,
+                                value: rulesQuickGoalValue,
+                                accent: StudioTheme.coral
                             )
-                            ruleStep(
-                                number: "2",
-                                title: rulesStepTwoTitle,
-                                message: rulesStepTwoMessage
-                            )
-                            ruleStep(
-                                number: "3",
-                                title: rulesStepThreeTitle,
-                                message: rulesStepThreeMessage
-                            )
-                            ruleStep(
-                                number: "4",
-                                title: rulesStepFourTitle,
-                                message: rulesStepFourMessage
-                            )
+                        }
+
+                        surface(
+                            padding: 18,
+                            fill: Color.white.opacity(0.52),
+                            border: StudioTheme.line.opacity(0.55),
+                            shadow: .clear
+                        ) {
+                            VStack(alignment: .leading, spacing: 14) {
+                                HStack(alignment: .top, spacing: 12) {
+                                    iconStamp(systemImage: "arrow.triangle.branch", accent: StudioTheme.teal)
+
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(rulesFlowTitle)
+                                            .font(StudioTypography.title)
+                                            .foregroundStyle(StudioTheme.ink)
+
+                                        Text(rulesFlowMessage)
+                                            .font(StudioTypography.footnote)
+                                            .foregroundStyle(StudioTheme.muted)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                }
+
+                                VStack(spacing: 12) {
+                                    ruleStep(
+                                        number: "1",
+                                        title: rulesStepOneTitle,
+                                        message: rulesStepOneMessage,
+                                        systemImage: "hand.tap.fill",
+                                        accent: StudioTheme.gold
+                                    )
+                                    ruleStep(
+                                        number: "2",
+                                        title: rulesStepTwoTitle,
+                                        message: rulesStepTwoMessage,
+                                        systemImage: "questionmark.bubble.fill",
+                                        accent: StudioTheme.teal
+                                    )
+                                    ruleStep(
+                                        number: "3",
+                                        title: rulesStepThreeTitle,
+                                        message: rulesStepThreeMessage,
+                                        systemImage: "checkmark.message.fill",
+                                        accent: StudioTheme.gold
+                                    )
+                                    ruleStep(
+                                        number: "4",
+                                        title: rulesStepFourTitle,
+                                        message: rulesStepFourMessage,
+                                        systemImage: "scope",
+                                        accent: StudioTheme.coral
+                                    )
+                                }
+                            }
+                        }
+
+                        surface(
+                            padding: 18,
+                            fill: StudioTheme.coral.opacity(0.1),
+                            border: StudioTheme.coral.opacity(0.24),
+                            shadow: .clear
+                        ) {
+                            HStack(alignment: .top, spacing: 12) {
+                                iconStamp(systemImage: "exclamationmark.circle.fill", accent: StudioTheme.coral)
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(rulesTipTitle)
+                                        .font(StudioTypography.subheadline)
+                                        .foregroundStyle(StudioTheme.ink)
+
+                                    Text(rulesTipMessage)
+                                        .font(StudioTypography.footnote)
+                                        .foregroundStyle(StudioTheme.muted)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
                         }
 
                         VStack(spacing: 12) {
@@ -658,6 +798,7 @@ struct ContentView: View {
                             style: .filled(StudioTheme.coral),
                             action: gameState.continueAfterHandoff
                         )
+
                     }
                 }
 
@@ -699,6 +840,7 @@ struct ContentView: View {
                     buttonStyle: .outlined(StudioTheme.coral),
                     action: gameState.chooseMakeGuess
                 )
+
             }
             .padding(.horizontal, 20)
             .padding(.top, 18)
@@ -724,6 +866,7 @@ struct ContentView: View {
                     style: .ghost,
                     action: gameState.returnToTurnChoice
                 )
+
             }
             .padding(.horizontal, 20)
             .padding(.top, 18)
@@ -794,7 +937,9 @@ struct ContentView: View {
         winner: GameState.Player,
         reason: GameState.EndReason
     ) -> some View {
-        ScrollView(.vertical, showsIndicators: false) {
+        let revealedCharacter = revealedCharacter(for: reason)
+
+        return ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
                 stageHeader(
                     label: roundResultLabel,
@@ -803,12 +948,9 @@ struct ContentView: View {
                     accent: StudioTheme.coral
                 )
 
-                HStack(spacing: 12) {
-                    summaryChip(title: playerSecretTitle(for: .one), value: gameState.secretCharacter(for: .one)?.name ?? unknownTitle, accent: StudioTheme.teal)
-                    summaryChip(title: playerSecretTitle(for: .two), value: gameState.secretCharacter(for: .two)?.name ?? unknownTitle, accent: StudioTheme.coral)
-                }
+                resultRevealCard(character: revealedCharacter)
 
-                characterBoard(for: winner, mode: .reveal)
+                resultRecapCard()
 
                 VStack(spacing: 12) {
                     menuButton(
@@ -817,18 +959,99 @@ struct ContentView: View {
                         style: .filled(StudioTheme.coral),
                         action: gameState.startNewGame
                     )
-
-                    menuButton(
-                        title: backToHomeTitle,
-                        systemImage: "house",
-                        style: .ghost,
-                        action: gameState.showMenu
-                    )
                 }
             }
             .padding(.horizontal, 20)
             .padding(.top, 18)
             .padding(.bottom, 34)
+        }
+    }
+
+    private func resultRevealCard(character: Character) -> some View {
+        surface(fill: Color.white.opacity(0.88), border: StudioTheme.coral.opacity(0.2), shadow: StudioTheme.shadowSoft) {
+            VStack(alignment: .center, spacing: 16) {
+                capsuleLabel(resultRevealLabel, accent: StudioTheme.coral)
+                    .frame(maxWidth: .infinity, alignment: .center)
+
+                resultPortrait(for: character)
+
+                VStack(spacing: 6) {
+                    Text(character.name)
+                        .font(StudioTypography.titleLarge)
+                        .foregroundStyle(StudioTheme.ink)
+                        .multilineTextAlignment(.center)
+
+                    Text(character.boardSummary)
+                        .font(StudioTypography.body)
+                        .foregroundStyle(StudioTheme.muted)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+    }
+
+    private func resultRecapCard() -> some View {
+        surface(
+            padding: 16,
+            fill: Color.white.opacity(0.78),
+            border: StudioTheme.line.opacity(0.65),
+            shadow: .clear
+        ) {
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(resultRecapTitle)
+                        .font(StudioTypography.title)
+                        .foregroundStyle(StudioTheme.ink)
+
+                    Text(resultRecapMessage)
+                        .font(StudioTypography.footnote)
+                        .foregroundStyle(StudioTheme.muted)
+                }
+
+                HStack(spacing: 12) {
+                    summaryChip(
+                        title: playerSecretTitle(for: .one),
+                        value: gameState.secretCharacter(for: .one)?.name ?? unknownTitle,
+                        accent: StudioTheme.teal
+                    )
+                    summaryChip(
+                        title: playerSecretTitle(for: .two),
+                        value: gameState.secretCharacter(for: .two)?.name ?? unknownTitle,
+                        accent: StudioTheme.coral
+                    )
+                }
+            }
+        }
+    }
+
+    private func resultPortrait(for character: Character) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(StudioTheme.softWash)
+
+            if let image = portraitImage(for: character) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(14)
+            } else {
+                Text(String(character.name.prefix(1)))
+                    .font(StudioTypography.display)
+                    .foregroundStyle(StudioTheme.inkSoft)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 280)
+        .overlay(alignment: .topTrailing) {
+            iconStamp(systemImage: "trophy.fill", accent: StudioTheme.gold)
+                .padding(14)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(StudioTheme.line.opacity(0.6), lineWidth: 1)
         }
     }
 
@@ -850,7 +1073,7 @@ struct ContentView: View {
 
                 Spacer()
 
-                compactMenuButton(menuTitle, systemImage: "house", action: gameState.showMenu)
+                compactMenuButton(backToHomeTitle, systemImage: "house", action: gameState.showMenu)
             }
 
             Text(message)
@@ -877,7 +1100,7 @@ struct ContentView: View {
 
                 Spacer()
 
-                compactMenuButton(menuTitle, systemImage: "house", action: gameState.showMenu)
+                compactMenuButton(backToHomeTitle, systemImage: "house", action: gameState.showMenu)
             }
 
             Text(message)
@@ -1140,13 +1363,33 @@ struct ContentView: View {
         }
     }
 
-    private func ruleStep(number: String, title: String, message: String) -> some View {
+    private func ruleStep(
+        number: String,
+        title: String,
+        message: String,
+        systemImage: String,
+        accent: Color
+    ) -> some View {
         HStack(alignment: .top, spacing: 14) {
-            Text(number)
-                .font(StudioTypography.label)
-                .foregroundStyle(StudioTheme.teal)
-                .frame(width: 26)
-                .padding(.top, 2)
+            ZStack {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(accent.opacity(0.12))
+                    .frame(width: 52, height: 52)
+
+                Image(systemName: systemImage)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(accent)
+            }
+            .overlay(alignment: .topTrailing) {
+                Text(number)
+                    .font(StudioTypography.compactLabel)
+                    .foregroundStyle(Color.white)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 4)
+                    .background(accent)
+                    .clipShape(Capsule())
+                    .offset(x: 6, y: -6)
+            }
 
             VStack(alignment: .leading, spacing: 6) {
                 Text(title)
@@ -1162,12 +1405,18 @@ struct ContentView: View {
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 15)
-        .background(Color.white.opacity(0.58))
+        .padding(.vertical, 16)
+        .background(
+            LinearGradient(
+                colors: [Color.white.opacity(0.9), accent.opacity(0.08)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(StudioTheme.line.opacity(0.65), lineWidth: 1)
+                .stroke(accent.opacity(0.18), lineWidth: 1)
         }
     }
 
@@ -1493,6 +1742,27 @@ struct ContentView: View {
             fallback: "%@'s secret",
             playerName(player)
         )
+    }
+
+    private func revealedCharacter(for reason: GameState.EndReason) -> Character {
+        switch reason {
+        case .correctGuess(let character):
+            return character
+        }
+    }
+
+    private func portraitImage(for character: Character) -> UIImage? {
+        guard
+            let url = Bundle.main.url(
+                forResource: character.portraitAssetName,
+                withExtension: "png",
+                subdirectory: "CharacterPortraits"
+            )
+        else {
+            return nil
+        }
+
+        return UIImage(contentsOfFile: url.path)
     }
 
     private func stepTitle(for stepNumber: Int) -> String {
