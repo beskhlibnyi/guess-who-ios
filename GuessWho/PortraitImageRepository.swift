@@ -1,4 +1,5 @@
 import Foundation
+import ImageIO
 import UIKit
 
 @MainActor
@@ -8,9 +9,13 @@ final class PortraitImageRepository: ObservableObject {
     private let bundle: Bundle
     private let cache = NSCache<NSString, UIImage>()
     private var requestedAssetNames: Set<String> = []
+    private static let thumbnailPixelSize = 512
 
     init(bundle: Bundle = .main) {
         self.bundle = bundle
+        // A bounded cache prevents a full roster from consuming the device memory budget.
+        cache.countLimit = 24
+        cache.totalCostLimit = 32 * 1024 * 1024
     }
 
     func image(for character: Character) -> UIImage? {
@@ -26,10 +31,7 @@ final class PortraitImageRepository: ObservableObject {
         let bundle = bundle
         let assetNamesToLoad = Array(assetNames)
 
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            var loadedImages: [(String, UIImage)] = []
-            loadedImages.reserveCapacity(assetNamesToLoad.count)
-
+        DispatchQueue.global(qos: .utility).async { [weak self] in
             for assetName in assetNamesToLoad {
                 autoreleasepool {
                     guard
@@ -38,23 +40,38 @@ final class PortraitImageRepository: ObservableObject {
                             withExtension: "png",
                             subdirectory: "CharacterPortraits"
                         ),
-                        let image = UIImage(contentsOfFile: url.path)
+                        let image = Self.downsampledImage(at: url)
                     else {
                         return
                     }
 
-                    loadedImages.append((assetName, image))
-                }
-            }
-
-            DispatchQueue.main.async {
-                guard let self else { return }
-
-                for (assetName, image) in loadedImages {
-                    self.cache.setObject(image, forKey: assetName as NSString)
-                    self.loadedAssetNames.insert(assetName)
+                    let cost = image.cgImage.map { $0.bytesPerRow * $0.height } ?? 0
+                    DispatchQueue.main.async {
+                        guard let self else { return }
+                        self.cache.setObject(image, forKey: assetName as NSString, cost: cost)
+                        self.loadedAssetNames.insert(assetName)
+                    }
                 }
             }
         }
+    }
+
+    nonisolated private static func downsampledImage(at url: URL) -> UIImage? {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else {
+            return nil
+        }
+
+        let options: CFDictionary = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: thumbnailPixelSize,
+            kCGImageSourceShouldCacheImmediately: true
+        ] as CFDictionary
+
+        guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options) else {
+            return nil
+        }
+
+        return UIImage(cgImage: image)
     }
 }
