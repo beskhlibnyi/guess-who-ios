@@ -5,6 +5,8 @@ struct GameFlowView: View {
     let language: GuessWhoLanguage; let playerName: (GameState.Player) -> String
     var body: some View {
         switch gameState.phase {
+        case .idle:
+            EmptyView()
         case .selectingSecret(let player): boardScreen(player, label: localized("screen.secret.label", "Choose Secret", language), title: secretTitle(player), message: localized("screen.secret.message", "Choose your character privately.", language), mode: .selectSecret, tint: StudioTheme.teal, footer: { EmptyView() })
         case .handoff(_, let player, _): handoff(player)
         case .choosingTurnAction(let player): turnChoice(player)
