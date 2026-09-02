@@ -1803,68 +1803,16 @@ struct ContentView: View {
     }
 
     private var homeLanguageToggle: some View {
-        HStack(spacing: 10) {
-            homeLanguageFlagButton(for: .english)
-            homeLanguageFlagButton(for: .ukrainian)
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(Color.white.opacity(0.72))
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(StudioTheme.line, lineWidth: 1)
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(homeLanguageLabel)
-        .accessibilityValue(activeHomeLanguage == .ukrainian ? homeLanguageUkrainianTitle : homeLanguageEnglishTitle)
-    }
-
-    private func homeLanguageFlagButton(for language: GuessWhoLanguage) -> some View {
-        let isSelected = activeHomeLanguage == language
-
-        return Button {
-            UserDefaults.standard.set(language.rawValue, forKey: guessWhoLanguageOverrideKey)
-            homeLanguageOverride = language.rawValue
-        } label: {
-            HomeLanguageFlag(language: language)
-                .frame(width: 42, height: 28)
-                .padding(.horizontal, 6)
-                .frame(maxWidth: .infinity)
-                .frame(height: 46)
-                .background(isSelected ? Color.white.opacity(0.92) : Color.clear)
-                .contentShape(Capsule())
-                .clipShape(Capsule())
-                .overlay {
-                    Capsule()
-                        .stroke(
-                            isSelected ? homeLanguageSelectionBorder(for: language) : Color.clear,
-                            lineWidth: 1.5
-                        )
-                }
-                .shadow(color: isSelected ? StudioTheme.shadowSoft.opacity(1.2) : .clear, radius: 10, x: 0, y: 6)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(homeLanguageAccessibilityTitle(for: language))
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
-
-    private func homeLanguageSelectionBorder(for language: GuessWhoLanguage) -> Color {
-        switch language {
-        case .english:
-            return Color(red: 0.06, green: 0.20, blue: 0.53).opacity(0.28)
-        case .ukrainian:
-            return StudioTheme.gold.opacity(0.45)
-        }
-    }
-
-    private func homeLanguageAccessibilityTitle(for language: GuessWhoLanguage) -> String {
-        switch language {
-        case .english:
-            return homeLanguageEnglishTitle
-        case .ukrainian:
-            return homeLanguageUkrainianTitle
-        }
+        HomeLanguagePicker(
+            selectedLanguage: activeHomeLanguage,
+            label: homeLanguageLabel,
+            englishTitle: homeLanguageEnglishTitle,
+            ukrainianTitle: homeLanguageUkrainianTitle,
+            onSelect: { language in
+                UserDefaults.standard.set(language.rawValue, forKey: guessWhoLanguageOverrideKey)
+                homeLanguageOverride = language.rawValue
+            }
+        )
     }
 
     private func turnChoiceTitle(for player: GameState.Player) -> String {
@@ -1902,83 +1850,6 @@ struct ContentView: View {
         }
 
         return lead
-    }
-}
-
-private struct HomeLanguageFlag: View {
-    let language: GuessWhoLanguage
-
-    var body: some View {
-        GeometryReader { geometry in
-            let width = geometry.size.width
-            let height = geometry.size.height
-
-            ZStack {
-                switch language {
-                case .english:
-                    englishFlag(width: width, height: height)
-                case .ukrainian:
-                    ukrainianFlag
-                }
-            }
-            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
-            }
-        }
-    }
-
-    private var ukrainianFlag: some View {
-        VStack(spacing: 0) {
-            Color(red: 0.10, green: 0.42, blue: 0.88)
-            Color(red: 0.98, green: 0.83, blue: 0.20)
-        }
-    }
-
-    @ViewBuilder
-    private func englishFlag(width: CGFloat, height: CGFloat) -> some View {
-        let diagonalLength = sqrt((width * width) + (height * height))
-
-        ZStack {
-            Color(red: 0.06, green: 0.20, blue: 0.53)
-
-            Rectangle()
-                .fill(.white)
-                .frame(width: diagonalLength, height: height * 0.22)
-                .rotationEffect(.degrees(33))
-
-            Rectangle()
-                .fill(.white)
-                .frame(width: diagonalLength, height: height * 0.22)
-                .rotationEffect(.degrees(-33))
-
-            Rectangle()
-                .fill(Color(red: 0.79, green: 0.11, blue: 0.17))
-                .frame(width: diagonalLength, height: height * 0.10)
-                .rotationEffect(.degrees(33))
-
-            Rectangle()
-                .fill(Color(red: 0.79, green: 0.11, blue: 0.17))
-                .frame(width: diagonalLength, height: height * 0.10)
-                .rotationEffect(.degrees(-33))
-
-            Rectangle()
-                .fill(.white)
-                .frame(width: width, height: height * 0.34)
-
-            Rectangle()
-                .fill(.white)
-                .frame(width: width * 0.28, height: height)
-
-            Rectangle()
-                .fill(Color(red: 0.79, green: 0.11, blue: 0.17))
-                .frame(width: width, height: height * 0.18)
-
-            Rectangle()
-                .fill(Color(red: 0.79, green: 0.11, blue: 0.17))
-                .frame(width: width * 0.14, height: height)
-        }
     }
 }
 
@@ -2255,7 +2126,7 @@ private enum StudioTypography {
     static let cardTitle = Font.custom("AvenirNext-DemiBold", size: 18)
 }
 
-private enum StudioTheme {
+enum StudioTheme {
     static let canvasTop = Color(red: 0.985, green: 0.965, blue: 0.925)
     static let canvasBottom = Color(red: 0.949, green: 0.92, blue: 0.872)
     static let handoffTop = Color(red: 0.981, green: 0.938, blue: 0.886)
