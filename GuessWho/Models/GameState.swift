@@ -40,6 +40,7 @@ final class GameState: ObservableObject {
     }
 
     enum Phase: Equatable {
+        case idle
         case selectingSecret(Player)
         case handoff(from: Player, to: Player, reason: HandoffReason)
         case choosingTurnAction(Player)
@@ -47,15 +48,43 @@ final class GameState: ObservableObject {
         case eliminating(Player, answer: Bool)
         case guessing(Player)
         case gameOver(winner: Player, reason: EndReason)
+
+        var activePlayer: Player? {
+            switch self {
+            case .idle:
+                return nil
+            case .selectingSecret(let player),
+                    .choosingTurnAction(let player),
+                    .awaitingAnswer(let player),
+                    .eliminating(let player, _),
+                    .guessing(let player),
+                    .gameOver(let player, _):
+                return player
+            case .handoff(_, let toPlayer, _):
+                return toPlayer
+            }
+        }
+
+        var hasRoundInProgress: Bool {
+            switch self {
+            case .idle, .gameOver:
+                return false
+            case .selectingSecret,
+                    .handoff,
+                    .choosingTurnAction,
+                    .awaitingAnswer,
+                    .eliminating,
+                    .guessing:
+                return true
+            }
+        }
     }
 
     @Published private(set) var characters: [Character] = Character.starterRoster
     @Published private(set) var playerOneSecret: Character?
     @Published private(set) var playerTwoSecret: Character?
-    @Published private(set) var currentPlayer: Player = .one
-    @Published private(set) var phase: Phase = .selectingSecret(.one)
+    @Published private(set) var phase: Phase = .idle
     @Published private(set) var appScreen: AppScreen = .menu
-    @Published private(set) var hasRoundInProgress = false
     @Published private(set) var eliminatedCharacterIDsByPlayer: [Player: Set<Character.ID>] = [
         .one: [],
         .two: []
@@ -75,9 +104,16 @@ final class GameState: ObservableObject {
         #endif
     }
 
+    var currentPlayer: Player {
+        phase.activePlayer ?? .one
+    }
+
+    var hasRoundInProgress: Bool {
+        phase.hasRoundInProgress
+    }
+
     func startNewGame() {
         appScreen = .game
-        hasRoundInProgress = true
         resetRound()
     }
 
@@ -108,7 +144,8 @@ final class GameState: ObservableObject {
         switch phase {
         case .awaitingAnswer(let player), .guessing(let player):
             phase = .choosingTurnAction(player)
-        case .selectingSecret,
+        case .idle,
+                .selectingSecret,
                 .handoff,
                 .choosingTurnAction,
                 .eliminating,
@@ -135,6 +172,8 @@ final class GameState: ObservableObject {
 
     func handleCharacterTap(_ character: Character) {
         switch phase {
+        case .idle:
+            break
         case .selectingSecret(let player):
             selectSecret(character, for: player)
         case .eliminating(let player, _):
@@ -205,7 +244,6 @@ final class GameState: ObservableObject {
     }
 
     private func resetRound() {
-        currentPlayer = .one
         phase = .selectingSecret(.one)
         playerOneSecret = nil
         playerTwoSecret = nil
@@ -236,7 +274,6 @@ final class GameState: ObservableObject {
         guard let opponentSecret = secretCharacter(for: opponent) else { return }
 
         if character.id == opponentSecret.id {
-            hasRoundInProgress = false
             phase = .gameOver(winner: player, reason: .correctGuess(character))
         } else {
             showHandoff(from: player, reason: .wrongGuess(character))
@@ -253,12 +290,10 @@ final class GameState: ObservableObject {
 
     private func showHandoff(from player: Player, reason: HandoffReason) {
         let nextPlayer = player.next
-        currentPlayer = nextPlayer
         phase = .handoff(from: player, to: nextPlayer, reason: reason)
     }
 
     private func showNextStep(for player: Player) {
-        currentPlayer = player
         phase = secretCharacter(for: player) == nil ? .selectingSecret(player) : .choosingTurnAction(player)
     }
 
@@ -321,46 +356,35 @@ final class GameState: ObservableObject {
             appScreen = .menu
         case "secret_1":
             appScreen = .game
-            hasRoundInProgress = true
             phase = .selectingSecret(.one)
         case "secret_2":
             seedPlayerOneSecretOnly()
-            currentPlayer = .two
             phase = .selectingSecret(.two)
         case "handoff_secret":
             seedPlayerOneSecretOnly()
-            currentPlayer = .two
             phase = .handoff(from: .one, to: .two, reason: .secretSelected)
         case "turn_choice":
             seedLiveRound()
-            currentPlayer = .one
             phase = .choosingTurnAction(.one)
         case "awaiting_answer":
             seedLiveRound()
-            currentPlayer = .one
             phase = .awaitingAnswer(.one)
         case "eliminating_yes":
             seedLiveRound()
-            currentPlayer = .one
             eliminatedCharacterIDsByPlayer[.one] = Set(characters.prefix(9).map(\.id))
             phase = .eliminating(.one, answer: true)
         case "guessing":
             seedLiveRound()
-            currentPlayer = .one
             eliminatedCharacterIDsByPlayer[.one] = Set(characters.prefix(18).map(\.id))
             phase = .guessing(.one)
         case "handoff_turn":
             seedLiveRound()
-            currentPlayer = .two
             phase = .handoff(from: .one, to: .two, reason: .turnPassed)
         case "handoff_wrong_guess":
             seedLiveRound()
-            currentPlayer = .two
             phase = .handoff(from: .one, to: .two, reason: .wrongGuess(characters[7]))
         case "game_over":
             seedLiveRound()
-            hasRoundInProgress = false
-            currentPlayer = .one
             phase = .gameOver(winner: .one, reason: .correctGuess(playerTwoSecret ?? characters[6]))
         default:
             break
@@ -369,8 +393,6 @@ final class GameState: ObservableObject {
 
     private func seedPlayerOneSecretOnly() {
         appScreen = .game
-        hasRoundInProgress = true
-        currentPlayer = .one
         playerOneSecret = characters[0]
         playerTwoSecret = nil
         eliminatedCharacterIDsByPlayer = [.one: [], .two: []]
@@ -378,10 +400,8 @@ final class GameState: ObservableObject {
 
     private func seedLiveRound() {
         appScreen = .game
-        hasRoundInProgress = true
         playerOneSecret = characters[0]
         playerTwoSecret = characters[6]
-        currentPlayer = .one
         eliminatedCharacterIDsByPlayer = [
             .one: Set([characters[1].id, characters[4].id, characters[6].id, characters[10].id]),
             .two: Set([characters[0].id, characters[3].id, characters[5].id, characters[11].id])
