@@ -94,7 +94,7 @@ struct GamePickerScreen: View {
         case .guessWho:
             return ""
         case .alias:
-            return copy("game.alias.subtitle", fallback: "Custom rules")
+            return ""
         }
     }
 
@@ -103,11 +103,7 @@ struct GamePickerScreen: View {
         case .guessWho:
             return ""
         case .alias:
-            return [
-                copy("game.alias.preview", fallback: "Browse words"),
-                copy("game.alias.words_only", fallback: "Ukrainian words only")
-            ]
-            .joined(separator: " · ")
+            return ""
         }
     }
 

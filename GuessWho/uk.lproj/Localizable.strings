@@ -33,7 +33,12 @@
 "game.alias.preview" = "Переглянути слова";
 "alias.preview.title" = "Українська колода слів";
 "alias.preview.message" = "Режим перегляду повного словника Alias.";
-"alias.preview.total" = "%d слів";
+"alias.preview.total" = "Усього %d слів";
+"alias.preview.level_count" = "У цій вкладці %d слів";
+"alias.preview.level.easy" = "Легкі";
+"alias.preview.level.medium" = "Середні";
+"alias.preview.level.hard" = "Складні";
+"alias.preview.level.expert" = "Експертні";
 "alias.preview.page" = "Сторінка %d з %d";
 "alias.preview.previous" = "Назад";
 "alias.preview.next" = "Далі";

@@ -33,7 +33,12 @@
 "game.alias.preview" = "Browse words";
 "alias.preview.title" = "Ukrainian word deck";
 "alias.preview.message" = "Read-only preview of the complete Alias vocabulary.";
-"alias.preview.total" = "%d words";
+"alias.preview.total" = "%d words total";
+"alias.preview.level_count" = "%d words in this tab";
+"alias.preview.level.easy" = "Easy";
+"alias.preview.level.medium" = "Medium";
+"alias.preview.level.hard" = "Hard";
+"alias.preview.level.expert" = "Expert";
 "alias.preview.page" = "Page %d of %d";
 "alias.preview.previous" = "Previous";
 "alias.preview.next" = "Next";

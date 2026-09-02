@@ -3,13 +3,14 @@
 ## Project Snapshot
 
 - App: `GuessWho` is an offline, pass-and-play iPhone game built with SwiftUI for iOS 17+.
-- Current product shape: there is a small game catalog, but only `guessWho` is playable right now; `nextGame` is a placeholder.
+- Current product shape: `guessWho` is the complete playable game. `alias` is selectable and opens a read-only, paginated vocabulary preview while its custom rules and gameplay flow are still being designed.
 - Entry point: `GuessWho/GuessWhoApp.swift` creates a single shared `GameState` as an `@StateObject`.
 - App routing: `GuessWho/ContentView.swift` forwards into `GuessWhoExperienceView`, which switches between the catalog, home, rules, and gameplay screens from `gameState.appScreen`.
 - Main state owner: `GuessWho/Features/GuessWho/Models/GameState.swift` is the source of truth for navigation, selected game, turn flow, secrets, eliminated cards, and question notes.
 - Gameplay UI: `GuessWho/Features/GuessWho/GuessWhoGameplayFlowView.swift` contains the main round experience and also defines the shared visual system used across the app (`StudioTheme`, `StudioTypography`, button styling, card surfaces).
 - Home/setup UI: `GuessWho/Features/GuessWho/GuessWhoHomeScreen.swift` owns the menu, player naming flow, resume/new game actions, and rules entry.
-- Catalog UI: `GuessWho/Features/GameCatalog/GamePickerScreen.swift` owns game selection and exposes language switching from the launcher.
+- Catalog UI: `GuessWho/Features/GameCatalog/GamePickerScreen.swift` owns game selection. Alias selection routes to its dedicated preview rather than the Guess Who home flow.
+- Alias vocabulary: `GuessWho/Features/Alias/Resources/alias_uk_words.sqlite` is the bundled, offline source of truth. `AliasVocabulary.swift` reads a single page directly from SQLite rather than loading the full deck into memory.
 - Game data: `GuessWho/Features/GuessWho/Models/Character.swift` contains the starter roster and character presentation helpers; `PortraitImageRepository.swift` handles portrait image loading.
 - Localization: `GuessWho/Localization.swift` centralizes string lookup and language selection. The app currently supports English (`en`) and Ukrainian (`uk`).
 - Persisted user settings: language override and both player names are stored with `@AppStorage` keys defined in `Localization.swift`.
@@ -23,12 +24,25 @@
 - Round lifecycle: `idle` -> secret selection for each player -> handoff -> turn action -> question/answer/elimination or guess -> handoff or game over. Keep transition validation inside `GameState`; views should call its intent methods rather than mutate round state.
 - Each player has an independent eliminated-character set, question-note list, and question draft. A character is only eliminated for the active player, so do not replace these per-player collections with a shared board without intentionally changing game rules.
 - `GameState` is `@MainActor` and exposes most mutable state as `private(set)`. New gameplay behavior generally belongs in an intent method there, then gets rendered from the published state.
-- To add a playable catalog game, extend `GameState.Game` with availability and character data, add its catalog/localization presentation, and add a dedicated experience route. Do not mark `nextGame` available without a corresponding flow.
+- To add a playable catalog game, extend `GameState.Game` with availability and character data, add its catalog/localization presentation, and add a dedicated experience route. Alias currently has only `.aliasPreview`; do not route it through Guess Who setup or gameplay until its rules are defined.
 - Portrait files live at `GuessWho/Features/GuessWho/Resources/CharacterPortraits/<CharacterName>.png`; character image references must continue to match those filenames. Portraits are bundled as ordinary project resources, not asset-catalog images.
 - Localization source of truth is `GuessWhoLocalizationCatalog` in `Localization.swift`; translations live in `GuessWho/en.lproj/Localizable.strings` and `GuessWho/uk.lproj/Localizable.strings`. When adding a UI string, add the catalog entry and both translations, then use the catalog lookup rather than a raw user-facing literal.
 - The active language is selected by a persisted override, otherwise device preferences. `GuessWhoExperienceView` is keyed by the resolved language so language changes rebuild the visible UI.
 - Visual consistency: reuse `StudioTheme`, `StudioTypography`, and existing studio button/card styles from `GuessWhoGameplayFlowView.swift`. They are intentionally shared despite being declared in the gameplay file.
 - Useful targeted reads by task: state/rules -> `Models/GameState.swift`; turn and board UI -> `GuessWhoGameplayFlowView.swift`; setup/menu -> `GuessWhoHomeScreen.swift`; catalog -> `GamePickerScreen.swift`; strings/language -> `Localization.swift`; portraits/roster -> `Character.swift` and `PortraitImageRepository.swift`.
+
+## Alias Vocabulary
+
+- The Alias UI can be localized in English and Ukrainian, but every card word is Ukrainian regardless of the active UI language.
+- `alias_uk_words.sqlite` contains a `words` table with `word`, `part_of_speech`, `source`, `frequency`, `difficulty`, proper-name/phrase/abbreviation flags, and `enabled`. It contains 249,499 normalized unique candidates and 186,860 default-enabled noun, verb, and adjective cards.
+- The default pool excludes structural non-game cards: proper names, phrases, abbreviations, and unsupported parts of speech. It does not remove rare, specialist, or long valid words; those receive a higher difficulty score instead.
+- Runtime queries must filter `enabled = 1` and select by difficulty as needed. Do not add a second flat `.txt` or `.json` vocabulary resource alongside the SQLite deck.
+- `GuessWho/Features/Alias/AliasVocabularyPreviewScreen.swift` is intentionally read-only. It pages 24 words at a time to inspect the dataset and is not an Alias game implementation.
+- Rebuild the deck with `bin/build_alias_words`. It accepts `mph_ua.db` through `--source`, and either a generic `lemma<TAB>count` frequency TSV or UberText's `ubertext_freq.csv.xz` through `--frequency`. Use a `.sqlite` output path to generate the bundled runtime database.
+- The importer normalizes NFC, removes the source dictionary stress marker, lowercases, collapses whitespace, and normalizes apostrophes to U+02BC. It deduplicates normalized words and matches UberText frequencies by both lemma and Universal POS, preventing homonym frequencies from crossing parts of speech.
+- Difficulty is a continuous `1.0...5.0` score derived from inverse logarithmic frequency (75%) and normalized word length (25%). Missing frequencies are retained and score toward the hard end. Inspect sample distributions after every rebuild; use a small blacklist/override layer later if needed rather than manually curating the entire deck.
+- Build inputs are not committed: the current source dictionary is `mph_ua.db` from `mphdict`, and the current frequency source is UberText 2.0's lemma-frequency export. The generated SQLite deck is intentionally committed because this is an offline, at-home, non-commercial app and the 35 MB database keeps builds reproducible. If frequent database revisions become necessary, evaluate Git LFS or release-time generation.
+- Keep `AliasVocabularyAttribution.md` bundled with the deck. `mphdict` data uses ODbL/DbCL; UberText is CC BY-NC-SA 4.0. This project is for personal, at-home, non-commercial use. Re-evaluate the data licence and distribution obligations before any commercial or wider public release.
 
 ## Engineering Practices
 

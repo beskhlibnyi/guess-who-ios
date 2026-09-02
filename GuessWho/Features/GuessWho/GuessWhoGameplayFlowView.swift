@@ -335,37 +335,6 @@ struct GuessWhoGameplayFlowView: View {
         localizedHomeCopy("home.language.ukrainian", fallback: "Ukrainian")
     }
 
-    private var gamePickerTitle: String {
-        localizedHomeCopy("launcher.title", fallback: "Choose a game")
-    }
-
-    private var gamePickerSubtitle: String {
-        localizedHomeCopy(
-            "launcher.subtitle",
-            fallback: "Start with the live game now and leave room for the next one."
-        )
-    }
-
-    private var gamePickerOpenTitle: String {
-        localizedHomeCopy("launcher.open", fallback: "Open")
-    }
-
-    private var gamePickerAvailableTitle: String {
-        localizedHomeCopy("launcher.available", fallback: "Ready to play")
-    }
-
-    private var gamePickerComingSoonTitle: String {
-        localizedHomeCopy("launcher.coming_soon", fallback: "Coming soon")
-    }
-
-    private var gamePickerActiveRoundTitle: String {
-        localizedHomeCopy("launcher.in_progress", fallback: "Round in progress")
-    }
-
-    private var menuGamesTitle: String {
-        localizedHomeCopy("home.games", fallback: "Games")
-    }
-
     private var activeHomeLanguage: GuessWhoLanguage {
         GuessWhoLanguage.resolved(override: homeLanguageOverride)
     }
@@ -1141,55 +1110,6 @@ struct GuessWhoGameplayFlowView: View {
         }
     }
 
-    private func gameSelectionCard(for game: GameState.Game) -> some View {
-        let accent = gameAccent(for: game)
-        let isUnavailable = !game.isAvailable
-
-        return surface(
-            fill: isUnavailable ? Color.white.opacity(0.68) : Color.white.opacity(0.86),
-            border: accent.opacity(isUnavailable ? 0.2 : 0.3),
-            shadow: isUnavailable ? .clear : StudioTheme.shadowSoft
-        ) {
-            VStack(alignment: .leading, spacing: 18) {
-                HStack(alignment: .top, spacing: 14) {
-                    iconStamp(systemImage: gameIcon(for: game), accent: accent)
-
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(spacing: 8) {
-                            Text(gameTitle(for: game))
-                                .font(StudioTypography.title)
-                                .foregroundStyle(StudioTheme.ink)
-
-                            Spacer(minLength: 0)
-
-                            capsuleLabel(gameStatusTitle(for: game), accent: accent)
-                        }
-
-                        Text(gameDescription(for: game))
-                            .font(StudioTypography.footnote)
-                            .foregroundStyle(StudioTheme.muted)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-
-                if game.isAvailable {
-                    if gameState.selectedGame == game && gameState.hasRoundInProgress {
-                        Text(gamePickerActiveRoundTitle)
-                            .font(StudioTypography.compactLabel)
-                            .foregroundStyle(accent)
-                    }
-
-                    menuButton(
-                        title: gamePickerOpenTitle,
-                        systemImage: "arrow.right.circle.fill",
-                        style: .filled(accent),
-                        action: { gameState.selectGame(game) }
-                    )
-                }
-            }
-        }
-    }
-
     private func playerNameField(
         title: String,
         text: Binding<String>,
@@ -1358,52 +1278,6 @@ struct GuessWhoGameplayFlowView: View {
                 accent: StudioTheme.gold,
                 icon: "sparkles"
             )
-        }
-    }
-
-    private func gameTitle(for game: GameState.Game) -> String {
-        switch game {
-        case .guessWho:
-            return localizedHomeCopy("game.guesswho.title", fallback: "ХТО")
-        case .nextGame:
-            return localizedHomeCopy("game.next.title", fallback: "Next Game")
-        }
-    }
-
-    private func gameDescription(for game: GameState.Game) -> String {
-        switch game {
-        case .guessWho:
-            return localizedHomeCopy(
-                "game.guesswho.description",
-                fallback: "Classic two-player face guessing on one iPhone."
-            )
-        case .nextGame:
-            return localizedHomeCopy(
-                "game.next.description",
-                fallback: "Reserved for the next board, rules, and art set."
-            )
-        }
-    }
-
-    private func gameStatusTitle(for game: GameState.Game) -> String {
-        game.isAvailable ? gamePickerAvailableTitle : gamePickerComingSoonTitle
-    }
-
-    private func gameIcon(for game: GameState.Game) -> String {
-        switch game {
-        case .guessWho:
-            return "person.2.crop.square.stack.fill"
-        case .nextGame:
-            return "sparkles.rectangle.stack"
-        }
-    }
-
-    private func gameAccent(for game: GameState.Game) -> Color {
-        switch game {
-        case .guessWho:
-            return StudioTheme.teal
-        case .nextGame:
-            return StudioTheme.gold
         }
     }
 
