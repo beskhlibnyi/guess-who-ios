@@ -14,7 +14,7 @@ struct LanguageFlagView: View {
                 case .english:
                     englishFlag(width: width, height: height)
                 case .ukrainian:
-                    ukrainianFlag
+                    ukrainianFlag(width: width, height: height)
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
@@ -25,11 +25,12 @@ struct LanguageFlagView: View {
         }
     }
 
-    private var ukrainianFlag: some View {
+    private func ukrainianFlag(width: CGFloat, height: CGFloat) -> some View {
         VStack(spacing: 0) {
             Color(red: 0.10, green: 0.42, blue: 0.88)
             Color(red: 0.98, green: 0.83, blue: 0.20)
         }
+        .frame(width: width, height: height)
     }
 
     @ViewBuilder

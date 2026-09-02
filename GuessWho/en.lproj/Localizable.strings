@@ -20,6 +20,9 @@
 "home.language.label" = "Language";
 "home.language.english" = "English";
 "home.language.ukrainian" = "Ukrainian";
+"settings.title" = "Settings";
+"settings.open" = "Open settings";
+"settings.close" = "Close settings";
 "home.games" = "Games";
 "home.footer" = "© 2026 НТО";
 "launcher.title" = "Choose a game";

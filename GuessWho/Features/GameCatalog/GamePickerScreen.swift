@@ -4,6 +4,7 @@ import SwiftUI
 struct GamePickerScreen: View {
     @EnvironmentObject private var gameState: GameState
     @AppStorage(guessWhoLanguageOverrideKey) private var languageOverride = ""
+    @State private var isSettingsPresented = false
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -37,6 +38,13 @@ struct GamePickerScreen: View {
             .padding(.horizontal, 20)
             .padding(.top, 72)
             .padding(.bottom, 28)
+        }
+        .overlay {
+            LauncherSettingsDrawer(
+                languageOverride: $languageOverride,
+                isPresented: $isSettingsPresented
+            )
+            .ignoresSafeArea(.container, edges: .bottom)
         }
     }
 

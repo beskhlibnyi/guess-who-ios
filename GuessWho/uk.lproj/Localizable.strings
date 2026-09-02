@@ -20,6 +20,9 @@
 "home.language.label" = "Мова";
 "home.language.english" = "English";
 "home.language.ukrainian" = "Українська";
+"settings.title" = "Налаштування";
+"settings.open" = "Відкрити налаштування";
+"settings.close" = "Закрити налаштування";
 "home.games" = "Ігри";
 "home.footer" = "© 2026 ХТО";
 "launcher.title" = "Оберіть гру";
