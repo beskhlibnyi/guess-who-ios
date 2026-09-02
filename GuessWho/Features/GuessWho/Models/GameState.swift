@@ -10,9 +10,37 @@ final class GameState: ObservableObject {
     }
 
     enum AppScreen: Equatable {
+        case gamePicker
         case menu
         case rules
         case game
+    }
+
+    enum Game: String, CaseIterable, Hashable, Identifiable {
+        case guessWho
+        case nextGame
+
+        var id: String {
+            rawValue
+        }
+
+        var isAvailable: Bool {
+            switch self {
+            case .guessWho:
+                return true
+            case .nextGame:
+                return false
+            }
+        }
+
+        var characters: [Character] {
+            switch self {
+            case .guessWho:
+                return Character.starterRoster
+            case .nextGame:
+                return []
+            }
+        }
     }
 
     enum Player: Hashable {
@@ -80,11 +108,12 @@ final class GameState: ObservableObject {
         }
     }
 
-    @Published private(set) var characters: [Character] = Character.starterRoster
+    @Published private(set) var selectedGame: Game = .guessWho
+    @Published private(set) var characters: [Character] = Game.guessWho.characters
     @Published private(set) var playerOneSecret: Character?
     @Published private(set) var playerTwoSecret: Character?
     @Published private(set) var phase: Phase = .idle
-    @Published private(set) var appScreen: AppScreen = .menu
+    @Published private(set) var appScreen: AppScreen = .gamePicker
     @Published private(set) var eliminatedCharacterIDsByPlayer: [Player: Set<Character.ID>] = [
         .one: [],
         .two: []
@@ -112,6 +141,18 @@ final class GameState: ObservableObject {
         phase.hasRoundInProgress
     }
 
+    func selectGame(_ game: Game) {
+        guard game.isAvailable else { return }
+
+        if selectedGame != game {
+            selectedGame = game
+            characters = game.characters
+            clearRoundState()
+        }
+
+        appScreen = .menu
+    }
+
     func startNewGame() {
         appScreen = .game
         resetRound()
@@ -124,6 +165,10 @@ final class GameState: ObservableObject {
 
     func showMenu() {
         appScreen = .menu
+    }
+
+    func showGamePicker() {
+        appScreen = .gamePicker
     }
 
     func showRules() {
@@ -245,6 +290,15 @@ final class GameState: ObservableObject {
 
     private func resetRound() {
         phase = .selectingSecret(.one)
+        playerOneSecret = nil
+        playerTwoSecret = nil
+        eliminatedCharacterIDsByPlayer = [.one: [], .two: []]
+        questionNotesByPlayer = [.one: [], .two: []]
+        questionDraftsByPlayer = [.one: "", .two: ""]
+    }
+
+    private func clearRoundState() {
+        phase = .idle
         playerOneSecret = nil
         playerTwoSecret = nil
         eliminatedCharacterIDsByPlayer = [.one: [], .two: []]
