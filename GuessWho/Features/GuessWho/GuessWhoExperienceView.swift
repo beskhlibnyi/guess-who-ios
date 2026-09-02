@@ -13,6 +13,8 @@ struct GuessWhoExperienceView: View {
                 switch gameState.appScreen {
                 case .gamePicker:
                     GamePickerScreen()
+                case .aliasPreview:
+                    AliasVocabularyPreviewScreen()
                 case .menu:
                     GuessWhoHomeScreen()
                 case .rules:

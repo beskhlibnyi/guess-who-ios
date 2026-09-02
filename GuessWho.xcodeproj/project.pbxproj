@@ -24,6 +24,11 @@
 		F0E1D2C3B4A5968778695A05 /* RulesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E1D2C3B4A5968778695A06 /* RulesScreen.swift */; };
 		F0E1D2C3B4A5968778695A07 /* GuessWhoHomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E1D2C3B4A5968778695A08 /* GuessWhoHomeScreen.swift */; };
 		F0E1D2C3B4A5968778695A09 /* GuessWhoExperienceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E1D2C3B4A5968778695A0A /* GuessWhoExperienceView.swift */; };
+		B2C3D4E5F60718293A4B601 /* AliasVocabulary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B602 /* AliasVocabulary.swift */; };
+		B2C3D4E5F60718293A4B603 /* alias_uk_words.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B604 /* alias_uk_words.sqlite */; };
+		B2C3D4E5F60718293A4B605 /* AliasVocabularyAttribution.md in Resources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B606 /* AliasVocabularyAttribution.md */; };
+		B2C3D4E5F60718293A4B607 /* AliasVocabularyPreviewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B608 /* AliasVocabularyPreviewScreen.swift */; };
+		B2C3D4E5F60718293A4B609 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B60A /* libsqlite3.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +53,11 @@
 		F0E1D2C3B4A5968778695A06 /* RulesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/GuessWho/RulesScreen.swift; sourceTree = "<group>"; };
 		F0E1D2C3B4A5968778695A08 /* GuessWhoHomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/GuessWho/GuessWhoHomeScreen.swift; sourceTree = "<group>"; };
 		F0E1D2C3B4A5968778695A0A /* GuessWhoExperienceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/GuessWho/GuessWhoExperienceView.swift; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A4B602 /* AliasVocabulary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasVocabulary.swift; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A4B604 /* alias_uk_words.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = Features/Alias/Resources/alias_uk_words.sqlite; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A4B606 /* AliasVocabularyAttribution.md */ = {isa = PBXFileReference; lastKnownFileType = text.markdown; path = Features/Alias/Resources/AliasVocabularyAttribution.md; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A4B608 /* AliasVocabularyPreviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasVocabularyPreviewScreen.swift; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A4B60A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,6 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B2C3D4E5F60718293A4B609 /* libsqlite3.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -106,6 +117,10 @@
 				F0E1D2C3B4A5968778695A06 /* RulesScreen.swift */,
 				F0E1D2C3B4A5968778695A08 /* GuessWhoHomeScreen.swift */,
 				F0E1D2C3B4A5968778695A0A /* GuessWhoExperienceView.swift */,
+				B2C3D4E5F60718293A4B602 /* AliasVocabulary.swift */,
+				B2C3D4E5F60718293A4B604 /* alias_uk_words.sqlite */,
+				B2C3D4E5F60718293A4B606 /* AliasVocabularyAttribution.md */,
+				B2C3D4E5F60718293A4B608 /* AliasVocabularyPreviewScreen.swift */,
 				A1B2C3D4E5F60718293A4B6B /* Localization.swift */,
 				A1B2C3D4E5F60718293A4B43 /* Models */,
 				A1B2C3D4E5F60718293A4B69 /* Localizable.strings */,
@@ -217,6 +232,8 @@
 				A1B2C3D4E5F60718293A4B65 /* Assets.xcassets in Resources */,
 				A1B2C3D4E5F60718293A4B66 /* Localizable.strings in Resources */,
 				A1B2C3D4E5F60718293A4B6D /* Yakutovych.ttf in Resources */,
+				B2C3D4E5F60718293A4B603 /* alias_uk_words.sqlite in Resources */,
+				B2C3D4E5F60718293A4B605 /* AliasVocabularyAttribution.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -241,6 +258,8 @@
 				F0E1D2C3B4A5968778695A05 /* RulesScreen.swift in Sources */,
 				F0E1D2C3B4A5968778695A07 /* GuessWhoHomeScreen.swift in Sources */,
 				F0E1D2C3B4A5968778695A09 /* GuessWhoExperienceView.swift in Sources */,
+				B2C3D4E5F60718293A4B601 /* AliasVocabulary.swift in Sources */,
+				B2C3D4E5F60718293A4B607 /* AliasVocabularyPreviewScreen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

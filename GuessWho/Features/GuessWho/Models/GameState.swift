@@ -11,6 +11,7 @@ final class GameState: ObservableObject {
 
     enum AppScreen: Equatable {
         case gamePicker
+        case aliasPreview
         case menu
         case rules
         case game
@@ -18,7 +19,7 @@ final class GameState: ObservableObject {
 
     enum Game: String, CaseIterable, Hashable, Identifiable {
         case guessWho
-        case nextGame
+        case alias
 
         var id: String {
             rawValue
@@ -28,8 +29,8 @@ final class GameState: ObservableObject {
             switch self {
             case .guessWho:
                 return true
-            case .nextGame:
-                return false
+            case .alias:
+                return true
             }
         }
 
@@ -37,7 +38,7 @@ final class GameState: ObservableObject {
             switch self {
             case .guessWho:
                 return Character.starterRoster
-            case .nextGame:
+            case .alias:
                 return []
             }
         }
@@ -150,7 +151,12 @@ final class GameState: ObservableObject {
             clearRoundState()
         }
 
-        appScreen = .menu
+        switch game {
+        case .guessWho:
+            appScreen = .menu
+        case .alias:
+            appScreen = .aliasPreview
+        }
     }
 
     func startNewGame() {
