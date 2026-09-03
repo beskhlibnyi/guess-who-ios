@@ -4,6 +4,8 @@ import SwiftUI
 struct GamePickerScreen: View {
     @EnvironmentObject private var gameState: GameState
     @AppStorage(guessWhoLanguageOverrideKey) private var languageOverride = ""
+    @AppStorage(guessWhoPlayerOneNameKey) private var playerOneName = ""
+    @AppStorage(guessWhoPlayerTwoNameKey) private var playerTwoName = ""
     @State private var isSettingsPresented = false
 
     var body: some View {
@@ -24,6 +26,8 @@ struct GamePickerScreen: View {
         .overlay {
             LauncherSettingsDrawer(
                 languageOverride: $languageOverride,
+                playerOneName: $playerOneName,
+                playerTwoName: $playerTwoName,
                 isPresented: $isSettingsPresented
             )
             .ignoresSafeArea(.container, edges: .bottom)

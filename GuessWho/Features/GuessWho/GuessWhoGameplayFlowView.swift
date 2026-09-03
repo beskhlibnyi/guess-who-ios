@@ -54,29 +54,6 @@ struct GuessWhoGameplayFlowView: View {
         localizedHomeCopy("home.resume", fallback: "Resume Game")
     }
 
-    private var homePlayersTitle: String {
-        localizedHomeCopy("home.players.title", fallback: "Name your players")
-    }
-
-    private var homePlayersMessage: String {
-        localizedHomeCopy(
-            "home.players.message",
-            fallback: "Add names for each side, or leave them blank to keep the default labels."
-        )
-    }
-
-    private var homePlayersPlaceholder: String {
-        localizedHomeCopy("home.players.placeholder", fallback: "Enter a name")
-    }
-
-    private var homePlayersBackTitle: String {
-        localizedHomeCopy("home.players.back", fallback: "Back")
-    }
-
-    private var homePlayersStartTitle: String {
-        localizedHomeCopy("home.players.start", fallback: "Start Game")
-    }
-
     private var homeRulesTitle: String {
         localizedHomeCopy("home.rules", fallback: "How to Play")
     }
@@ -1107,32 +1084,6 @@ struct GuessWhoGameplayFlowView: View {
         .overlay {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .stroke(accent.opacity(0.18), lineWidth: 1)
-        }
-    }
-
-    private func playerNameField(
-        title: String,
-        text: Binding<String>,
-        accent: Color
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title.uppercased())
-                .font(StudioTypography.label)
-                .foregroundStyle(StudioTheme.muted)
-
-            TextField(homePlayersPlaceholder, text: text)
-                .font(StudioTypography.body)
-                .foregroundStyle(StudioTheme.ink)
-                .textInputAutocapitalization(.words)
-                .disableAutocorrection(true)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 14)
-                .background(Color.white.opacity(0.92))
-                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(accent.opacity(0.2), lineWidth: 1)
-                }
         }
     }
 

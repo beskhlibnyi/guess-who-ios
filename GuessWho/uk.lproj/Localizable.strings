@@ -7,11 +7,6 @@
 "home.summary" = "Оберіть персонажа. Ставте питання так чи ні. Вгадуйте.";
 "home.start" = "Нова гра";
 "home.resume" = "Продовжити гру";
-"home.players.title" = "Назвіть гравців";
-"home.players.message" = "Додайте ім'я для кожного гравця або залиште поле порожнім, щоб лишити стандартні назви.";
-"home.players.placeholder" = "Введіть ім'я";
-"home.players.back" = "Назад";
-"home.players.start" = "Почати гру";
 "home.rules" = "Правила";
 "home.live_round.title" = "Гра триває";
 "home.live_round.message" = "Пресонажів обрано: %@. Можна продовжити.";
@@ -23,6 +18,9 @@
 "settings.title" = "Налаштування";
 "settings.open" = "Відкрити налаштування";
 "settings.close" = "Закрити налаштування";
+"settings.players.title" = "Імена гравців";
+"settings.players.message" = "Ці імена використовуються в усьому ігровому процесі.";
+"settings.player.placeholder" = "Введіть ім'я";
 "home.games" = "Ігри";
 "home.footer" = "© 2026 ХТО";
 "launcher.coming_soon" = "Скоро";

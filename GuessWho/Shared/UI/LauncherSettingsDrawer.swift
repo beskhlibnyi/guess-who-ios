@@ -3,6 +3,8 @@ import SwiftUI
 /// A compact, edge-swipable home for launcher settings as more preferences are added.
 struct LauncherSettingsDrawer: View {
     @Binding var languageOverride: String
+    @Binding var playerOneName: String
+    @Binding var playerTwoName: String
     @Binding var isPresented: Bool
     @GestureState private var drawerDragTranslation: CGFloat = 0
 
@@ -74,20 +76,52 @@ struct LauncherSettingsDrawer: View {
                 .font(StudioTypography.title)
                 .foregroundStyle(StudioTheme.ink)
 
-            VStack(alignment: .leading, spacing: 14) {
-                Text(copy("home.language.label", fallback: "Language"))
-                    .font(StudioTypography.label)
-                    .foregroundStyle(StudioTheme.muted)
+            settingsCard {
+                VStack(alignment: .leading, spacing: 14) {
+                    Text(copy("settings.players.title", fallback: "Player names"))
+                        .font(StudioTypography.label)
+                        .foregroundStyle(StudioTheme.muted)
 
-                languageOption(.english, title: copy("home.language.english", fallback: "English"))
-                languageOption(.ukrainian, title: copy("home.language.ukrainian", fallback: "Ukrainian"))
+                    Text(copy("settings.players.message", fallback: "These names appear everywhere in the round flow."))
+                        .font(StudioTypography.footnote)
+                        .foregroundStyle(StudioTheme.muted)
+
+                    playerNameField(
+                        title: copy("home.player.one", fallback: "Player 1"),
+                        text: $playerOneName,
+                        accent: StudioTheme.teal
+                    )
+                    playerNameField(
+                        title: copy("home.player.two", fallback: "Player 2"),
+                        text: $playerTwoName,
+                        accent: StudioTheme.coral
+                    )
+                }
             }
-            .padding(18)
-            .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .overlay { RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(StudioTheme.line.opacity(0.8)) }
+
+            settingsCard {
+                VStack(alignment: .leading, spacing: 14) {
+                    Text(copy("home.language.label", fallback: "Language"))
+                        .font(StudioTypography.label)
+                        .foregroundStyle(StudioTheme.muted)
+
+                    languageOption(.english, title: copy("home.language.english", fallback: "English"))
+                    languageOption(.ukrainian, title: copy("home.language.ukrainian", fallback: "Ukrainian"))
+                }
+            }
 
             Spacer()
         }
+    }
+
+    private func settingsCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        content()
+            .padding(18)
+            .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                    .stroke(StudioTheme.line.opacity(0.8))
+            }
     }
 
     private var settingsRail: some View {
@@ -137,6 +171,32 @@ struct LauncherSettingsDrawer: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func playerNameField(
+        title: String,
+        text: Binding<String>,
+        accent: Color
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title.uppercased())
+                .font(StudioTypography.label)
+                .foregroundStyle(StudioTheme.muted)
+
+            TextField(copy("settings.player.placeholder", fallback: "Enter a name"), text: text)
+                .font(StudioTypography.body)
+                .foregroundStyle(StudioTheme.ink)
+                .textInputAutocapitalization(.words)
+                .disableAutocorrection(true)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .background(Color.white.opacity(0.92))
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .stroke(accent.opacity(0.2), lineWidth: 1)
+                }
+        }
     }
 
     private func dismiss() {

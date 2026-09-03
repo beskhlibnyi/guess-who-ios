@@ -7,11 +7,6 @@
 "home.summary" = "Pick a secret. Ask yes-or-no questions. Make your guess.";
 "home.start" = "New Game";
 "home.resume" = "Resume Game";
-"home.players.title" = "Name your players";
-"home.players.message" = "Add names for each side, or leave them blank to keep the default labels.";
-"home.players.placeholder" = "Enter a name";
-"home.players.back" = "Back";
-"home.players.start" = "Start Game";
 "home.rules" = "How to Play";
 "home.live_round.title" = "Game in progress";
 "home.live_round.message" = "%@ secrets picked. Jump back in.";
@@ -23,6 +18,9 @@
 "settings.title" = "Settings";
 "settings.open" = "Open settings";
 "settings.close" = "Close settings";
+"settings.players.title" = "Player names";
+"settings.players.message" = "These names appear everywhere in the round flow.";
+"settings.player.placeholder" = "Enter a name";
 "home.games" = "Games";
 "home.footer" = "© 2026 НТО";
 "launcher.coming_soon" = "Coming soon";
