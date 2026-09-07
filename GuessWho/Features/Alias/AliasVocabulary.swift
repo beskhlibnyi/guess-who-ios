@@ -6,6 +6,12 @@ enum AliasVocabulary {
     private static let reviewShuffleSeedKey = "aliasVocabularyReviewShuffleSeed"
     static let includeAdjectivesKey = "aliasVocabularyIncludeAdjectives"
 
+    private enum DifficultyCutoffs {
+        static let easyUpper = 2.5
+        static let mediumUpper = 3.5
+        static let hardUpper = 4.5
+    }
+
     enum DifficultyLevel: CaseIterable, Hashable, Sendable {
         case easy
         case medium
@@ -28,13 +34,13 @@ enum AliasVocabulary {
         fileprivate var bounds: [Double] {
             switch self {
             case .easy:
-                return [2]
+                return [DifficultyCutoffs.easyUpper]
             case .medium:
-                return [2, 3]
+                return [DifficultyCutoffs.easyUpper, DifficultyCutoffs.mediumUpper]
             case .hard:
-                return [3, 4]
+                return [DifficultyCutoffs.mediumUpper, DifficultyCutoffs.hardUpper]
             case .expert:
-                return [4]
+                return [DifficultyCutoffs.hardUpper]
             }
         }
     }
@@ -89,9 +95,9 @@ enum AliasVocabulary {
             """
             SELECT
               CASE
-                WHEN difficulty < 2 THEN 0
-                WHEN difficulty < 3 THEN 1
-                WHEN difficulty < 4 THEN 2
+                WHEN difficulty < \(DifficultyCutoffs.easyUpper) THEN 0
+                WHEN difficulty < \(DifficultyCutoffs.mediumUpper) THEN 1
+                WHEN difficulty < \(DifficultyCutoffs.hardUpper) THEN 2
                 ELSE 3
               END AS difficulty_level,
               COUNT(*),
