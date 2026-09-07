@@ -221,3 +221,15 @@
 "character.length.short" = "Коротке";
 "character.length.medium" = "Середнє";
 "character.length.long" = "Довге";
+
+"alias.explanation.action" = "Пояснити слово";
+"alias.explanation.title" = "Значення слова";
+"alias.explanation.loading" = "Шукаємо пояснення…";
+"alias.explanation.retry" = "Спробувати ще раз";
+"alias.explanation.note" = "Пояснення українською, створене ШІ. Може містити помилки.";
+"alias.explanation.missing_key" = "Пояснення слів не налаштовано для цієї збірки застосунку.";
+"alias.explanation.unauthorized" = "Ключ API відхилено або він не має доступу. Перевірте налаштування API застосунку.";
+"alias.explanation.rate_limited" = "Досягнуто ліміту API. Спробуйте пізніше або перевірте баланс API.";
+"alias.explanation.unavailable" = "Пояснення зараз недоступні. Спробуйте пізніше.";
+"alias.explanation.invalid_response" = "Не вдалося отримати повне пояснення. Спробуйте ще раз.";
+"alias.explanation.network_error" = "Не вдалося з’єднатися. Перевірте підключення до інтернету та спробуйте ще раз.";

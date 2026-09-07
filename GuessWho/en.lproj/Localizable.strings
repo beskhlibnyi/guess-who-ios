@@ -221,3 +221,15 @@
 "character.length.short" = "Short";
 "character.length.medium" = "Medium";
 "character.length.long" = "Long";
+
+"alias.explanation.action" = "Explain word";
+"alias.explanation.title" = "Word meaning";
+"alias.explanation.loading" = "Finding an explanation…";
+"alias.explanation.retry" = "Try again";
+"alias.explanation.note" = "AI-generated explanation in Ukrainian. It may contain mistakes.";
+"alias.explanation.missing_key" = "Word explanations are not configured for this app build.";
+"alias.explanation.unauthorized" = "The API key was rejected or does not have access. Check the app’s API configuration.";
+"alias.explanation.rate_limited" = "The API limit was reached. Try later or check your API balance.";
+"alias.explanation.unavailable" = "Explanations are unavailable right now. Please try again later.";
+"alias.explanation.invalid_response" = "No complete explanation was returned. Please try again.";
+"alias.explanation.network_error" = "Could not connect. Check your internet connection and try again.";

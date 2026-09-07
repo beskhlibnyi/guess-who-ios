@@ -104,6 +104,17 @@ struct GuessWhoLocalizedString {
 
 enum GuessWhoLocalizationCatalog {
     static let stringsByKey: [String: GuessWhoLocalizedString] = [
+        "alias.explanation.action": GuessWhoLocalizedString("alias.explanation.action", defaultValue: "Explain word"),
+        "alias.explanation.title": GuessWhoLocalizedString("alias.explanation.title", defaultValue: "Word meaning"),
+        "alias.explanation.loading": GuessWhoLocalizedString("alias.explanation.loading", defaultValue: "Finding an explanation…"),
+        "alias.explanation.retry": GuessWhoLocalizedString("alias.explanation.retry", defaultValue: "Try again"),
+        "alias.explanation.note": GuessWhoLocalizedString("alias.explanation.note", defaultValue: "AI-generated explanation in Ukrainian. It may contain mistakes."),
+        "alias.explanation.missing_key": GuessWhoLocalizedString("alias.explanation.missing_key", defaultValue: "Word explanations are not configured for this app build."),
+        "alias.explanation.unauthorized": GuessWhoLocalizedString("alias.explanation.unauthorized", defaultValue: "The API key was rejected or does not have access. Check the app’s API configuration."),
+        "alias.explanation.rate_limited": GuessWhoLocalizedString("alias.explanation.rate_limited", defaultValue: "The API limit was reached. Try later or check your API balance."),
+        "alias.explanation.unavailable": GuessWhoLocalizedString("alias.explanation.unavailable", defaultValue: "Explanations are unavailable right now. Please try again later."),
+        "alias.explanation.invalid_response": GuessWhoLocalizedString("alias.explanation.invalid_response", defaultValue: "No complete explanation was returned. Please try again."),
+        "alias.explanation.network_error": GuessWhoLocalizedString("alias.explanation.network_error", defaultValue: "Could not connect. Check your internet connection and try again."),
         "home.alert.title": GuessWhoLocalizedString("home.alert.title", defaultValue: "Start over?"),
         "home.alert.cancel": GuessWhoLocalizedString("home.alert.cancel", defaultValue: "Cancel"),
         "home.alert.confirm": GuessWhoLocalizedString("home.alert.confirm", defaultValue: "New Game"),

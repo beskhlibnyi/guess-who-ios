@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E341AAA00000000000000003 /* AliasWordExplanationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E341AAA00000000000000004 /* AliasWordExplanationSheet.swift */; };
+		E341AAA00000000000000001 /* AliasWordExplanationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E341AAA00000000000000002 /* AliasWordExplanationService.swift */; };
 		A86CC82A1E12400DA9C18101 /* AliasVocabularyReviewLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A86CC82A1E12400DA9C18102 /* AliasVocabularyReviewLoader.swift */; };
 		A1B2C3D4E5F60718293A4B61 /* GuessWhoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B51 /* GuessWhoApp.swift */; };
 		A1B2C3D4E5F60718293A4B62 /* GuessWhoGameplayFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B52 /* GuessWhoGameplayFlowView.swift */; };
@@ -34,6 +36,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E341AAA00000000000000005 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
+		E341AAA00000000000000004 /* AliasWordExplanationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasWordExplanationSheet.swift; sourceTree = "<group>"; };
+		E341AAA00000000000000002 /* AliasWordExplanationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasWordExplanationService.swift; sourceTree = "<group>"; };
 		A86CC82A1E12400DA9C18102 /* AliasVocabularyReviewLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasVocabularyReviewLoader.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B51 /* GuessWhoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuessWhoApp.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B52 /* GuessWhoGameplayFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/GuessWho/GuessWhoGameplayFlowView.swift; sourceTree = "<group>"; };
@@ -102,6 +107,7 @@
 		A1B2C3D4E5F60718293A4B40 = {
 			isa = PBXGroup;
 			children = (
+				E341AAA00000000000000005 /* Config.xcconfig */,
 				A1B2C3D4E5F60718293A4B41 /* GuessWho */,
 				A1B2C3D4E5F60718293A4B42 /* Products */,
 			);
@@ -121,6 +127,8 @@
 				F0E1D2C3B4A5968778695A06 /* RulesScreen.swift */,
 				F0E1D2C3B4A5968778695A08 /* GuessWhoHomeScreen.swift */,
 				F0E1D2C3B4A5968778695A0A /* GuessWhoExperienceView.swift */,
+				E341AAA00000000000000002 /* AliasWordExplanationService.swift */,
+				E341AAA00000000000000004 /* AliasWordExplanationSheet.swift */,
 				B2C3D4E5F60718293A4B602 /* AliasVocabulary.swift */,
 				B2C3D4E5F60718293A4B604 /* alias_uk_words.sqlite */,
 				B2C3D4E5F60718293A4B606 /* AliasVocabularyAttribution.md */,
@@ -264,6 +272,8 @@
 				F0E1D2C3B4A5968778695A05 /* RulesScreen.swift in Sources */,
 				F0E1D2C3B4A5968778695A07 /* GuessWhoHomeScreen.swift in Sources */,
 				F0E1D2C3B4A5968778695A09 /* GuessWhoExperienceView.swift in Sources */,
+				E341AAA00000000000000001 /* AliasWordExplanationService.swift in Sources */,
+				E341AAA00000000000000003 /* AliasWordExplanationSheet.swift in Sources */,
 				B2C3D4E5F60718293A4B601 /* AliasVocabulary.swift in Sources */,
 				B2C3D4E5F60718293A4B607 /* AliasVocabularyPreviewScreen.swift in Sources */,
 				A86CC82A1E12400DA9C18101 /* AliasVocabularyReviewLoader.swift in Sources */,
@@ -390,6 +400,7 @@
 		};
 		A1B2C3D4E5F60718293A4BB1 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E341AAA00000000000000005 /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -418,6 +429,7 @@
 		};
 		A1B2C3D4E5F60718293A4BB2 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E341AAA00000000000000005 /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

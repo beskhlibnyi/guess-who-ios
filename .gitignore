@@ -1,6 +1,9 @@
 # macOS
 .DS_Store
 
+# Local API credentials
+/Secrets.xcconfig
+
 # Xcode user data
 xcuserdata/
 *.xcuserdatad
@@ -18,4 +21,3 @@ Package.resolved
 # Playgrounds
 timeline.xctimeline
 playground.xcworkspace
-

@@ -1,0 +1,4 @@
+// Builds without local credentials still work; only word explanations need a key.
+OPENAI_API_KEY =
+OPENAI_MODEL = gpt-6-astra
+#include? "Secrets.xcconfig"

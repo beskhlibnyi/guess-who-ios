@@ -73,6 +73,7 @@ struct AliasVocabularyPreviewScreen: View {
                     fallback: "Swipe up to approve or down to discard."
                 ),
                 closeLabel: copy("alias.preview.close", fallback: "Close"),
+                explainLabel: copy("alias.explanation.action", fallback: "Explain word"),
                 onReview: { decision in
                     presentedWord = nil
                     review(word, as: decision)
@@ -419,11 +420,13 @@ private struct AliasWordReviewModal: View {
     let discardLabel: String
     let hint: String
     let closeLabel: String
+    let explainLabel: String
     let onReview: (AliasVocabulary.Decision) -> Void
     let onClose: () -> Void
 
     @State private var dragOffset: CGFloat = 0
     @State private var didReview = false
+    @State private var showsExplanation = false
 
     private var dragAccent: Color {
         if dragOffset < 0 {
@@ -497,6 +500,13 @@ private struct AliasWordReviewModal: View {
                     .font(StudioTypography.footnote)
                     .foregroundStyle(StudioTheme.muted)
                     .multilineTextAlignment(.center)
+
+                Button {
+                    showsExplanation = true
+                } label: {
+                    Label(explainLabel, systemImage: "book.closed")
+                }
+                .buttonStyle(ActionButtonStyle(kind: .outlined(StudioTheme.teal)))
             }
             .padding(24)
             .background {
@@ -509,6 +519,9 @@ private struct AliasWordReviewModal: View {
                     .stroke(StudioTheme.line.opacity(0.8))
             }
             .padding(.horizontal, 20)
+        }
+        .sheet(isPresented: $showsExplanation) {
+            AliasWordExplanationSheet(word: word.text)
         }
     }
 
