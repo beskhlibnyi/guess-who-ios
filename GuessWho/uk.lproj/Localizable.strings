@@ -49,8 +49,8 @@
 "alias.preview.move_to_discarded" = "Перемістити до відхилених";
 "alias.preview.return_to_review" = "Повернути на перевірку";
 "alias.preview.review_complete" = "Усі слова цього рівня перевірено.";
-"alias.preview.reveal" = "Двічі натисніть";
-"alias.preview.hide" = "Двічі натисніть, щоб сховати";
+"alias.preview.reveal" = "Натисніть, щоб відкрити";
+"alias.preview.hide" = "Натисніть, щоб сховати";
 "alias.preview.hidden" = "Приховане слово";
 "alias.preview.modal_hint" = "Проведіть угору, щоб схвалити, або вниз, щоб відхилити.";
 "alias.preview.close" = "Закрити";
@@ -60,7 +60,6 @@
 "alias.preview.level.medium" = "Середні";
 "alias.preview.level.hard" = "Складні";
 "alias.preview.level.expert" = "Експертні";
-"alias.preview.page" = "Сторінка %d з %d";
 "alias.preview.previous" = "Назад";
 "alias.preview.next" = "Далі";
 "rules.title" = "Правила";

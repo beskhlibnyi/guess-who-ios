@@ -5,7 +5,6 @@ struct AliasVocabularyPreviewScreen: View {
     @EnvironmentObject private var gameState: GameState
     @AppStorage(AliasVocabulary.includeAdjectivesKey) private var includeAdjectives = true
     @State private var selectedLevel: AliasVocabulary.DifficultyLevel = .easy
-    @State private var page = 0
     @State private var pageWords: [AliasVocabulary.Word] = []
     @State private var approvedWords: [AliasVocabulary.Word] = []
     @State private var discardedWords: [AliasVocabulary.Word] = []
@@ -17,6 +16,8 @@ struct AliasVocabularyPreviewScreen: View {
     @State private var discardedBasketExpanded = false
     @State private var difficultyStatisticsExpanded = false
     @State private var presentedWord: AliasVocabulary.Word?
+    @State private var loadID = UUID()
+    @State private var isLoading = true
 
     private let pageSize = 9
     private let basketPageSize = 9
@@ -26,50 +27,41 @@ struct AliasVocabularyPreviewScreen: View {
         statisticsByLevel[selectedLevel] ?? .zero
     }
 
-    private var pendingWordCount: Int {
-        max(0, selectedStatistics.total - selectedStatistics.approved - selectedStatistics.discarded)
-    }
-
-    private var pageCount: Int {
-        max(1, (pendingWordCount + pageSize - 1) / pageSize)
-    }
-
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 16) {
                 header
-                levelTabs
                 reviewBasket(.approved, isExpanded: $approvedBasketExpanded)
                 wordGrid
                 reviewBasket(.discarded, isExpanded: $discardedBasketExpanded)
-                controls
+                levelTabs
+                deckDetails
             }
             .padding(.horizontal, 20)
-            .padding(.top, 72)
+            .padding(.top, 12)
             .padding(.bottom, 28)
         }
         .task { loadPage() }
-        .onChange(of: page) { _, _ in loadPage() }
-        .onChange(of: approvedPage) { _, _ in loadReviewedWords(.approved) }
-        .onChange(of: discardedPage) { _, _ in loadReviewedWords(.discarded) }
+        .onChange(of: approvedPage) { _, _ in
+            approvedWords = []
+            loadPage()
+        }
+        .onChange(of: discardedPage) { _, _ in
+            discardedWords = []
+            loadPage()
+        }
         .onChange(of: selectedLevel) { _, _ in
+            clearWords()
             approvedPage = 0
             discardedPage = 0
-            if page == 0 {
-                loadPage()
-            } else {
-                page = 0
-            }
+            loadPage()
         }
         .onChange(of: includeAdjectives) { _, _ in
             presentedWord = nil
+            clearWords()
             approvedPage = 0
             discardedPage = 0
-            if page == 0 {
-                loadPage()
-            } else {
-                page = 0
-            }
+            loadPage()
         }
         .fullScreenCover(item: $presentedWord) { word in
             AliasWordReviewModal(
@@ -95,15 +87,19 @@ struct AliasVocabularyPreviewScreen: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack {
-                Button(copy("common.back", fallback: "Back"), action: gameState.showMenu)
-                    .buttonStyle(ActionButtonStyle(kind: .ghost))
-                Spacer()
-                Image(systemName: "text.bubble.fill")
-                    .foregroundStyle(StudioTheme.gold)
-            }
+        HStack(spacing: 12) {
+            Button(copy("common.back", fallback: "Back"), action: gameState.showMenu)
+                .buttonStyle(ActionButtonStyle(kind: .ghost))
+            Spacer(minLength: 0)
+            Text(copy("game.alias.preview", fallback: "Review words"))
+                .font(StudioTypography.subheadline)
+                .foregroundStyle(StudioTheme.ink)
+                .accessibilityAddTraits(.isHeader)
+        }
+    }
 
+    private var deckDetails: some View {
+        VStack(alignment: .leading, spacing: 18) {
             Text(copy("alias.statistics.title", fallback: "Deck statistics"))
                 .font(StudioTypography.displaySmall)
                 .foregroundStyle(StudioTheme.ink)
@@ -272,7 +268,10 @@ struct AliasVocabularyPreviewScreen: View {
 
     private var wordGrid: some View {
         Group {
-            if pageWords.isEmpty {
+            if pageWords.isEmpty && isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, minHeight: 96)
+            } else if pageWords.isEmpty {
                 Text(copy("alias.preview.review_complete", fallback: "All words in this level have been reviewed."))
                     .font(StudioTypography.body)
                     .foregroundStyle(StudioTheme.muted)
@@ -285,8 +284,8 @@ struct AliasVocabularyPreviewScreen: View {
                     ForEach(pageWords) { word in
                         AliasReviewWordCard(
                             word: word,
-                            revealLabel: copy("alias.preview.reveal", fallback: "Double-tap to reveal"),
-                            hideLabel: copy("alias.preview.hide", fallback: "Double-tap to hide"),
+                            revealLabel: copy("alias.preview.reveal", fallback: "Tap to reveal"),
+                            hideLabel: copy("alias.preview.hide", fallback: "Tap to hide"),
                             hiddenLabel: copy("alias.preview.hidden", fallback: "Hidden word"),
                             approveLabel: copy("alias.preview.approve", fallback: "Approve"),
                             discardLabel: copy("alias.preview.discard", fallback: "Discard"),
@@ -299,53 +298,53 @@ struct AliasVocabularyPreviewScreen: View {
         }
     }
 
-    private var controls: some View {
-        HStack(spacing: 12) {
-            Button(copy("alias.preview.previous", fallback: "Previous")) {
-                page -= 1
-            }
-            .buttonStyle(ActionButtonStyle(kind: .outlined(StudioTheme.teal)))
-            .disabled(page == 0)
-
-            Text(guessWhoLocalizedFormat("alias.preview.page", fallback: "Page %d of %d", page + 1, pageCount))
-                .font(StudioTypography.compactLabel)
-                .foregroundStyle(StudioTheme.muted)
-                .frame(maxWidth: .infinity)
-
-            Button(copy("alias.preview.next", fallback: "Next")) {
-                page += 1
-            }
-            .buttonStyle(ActionButtonStyle(kind: .filled(StudioTheme.coral)))
-            .disabled(page + 1 >= pageCount)
-        }
-        .animation(.snappy, value: page)
-    }
-
     private func copy(_ key: String, fallback: String) -> String {
         guessWhoLocalized(key, fallback: fallback)
     }
 
-    private func loadPage() {
-        loadStatistics()
-        let lastPage = max(0, (pendingWordCount - 1) / pageSize)
-        if page > lastPage {
-            page = lastPage
-            return
-        }
-        pageWords = AliasVocabulary.words(
-            in: selectedLevel,
-            page: page,
+    private var loadRequest: AliasVocabularyReviewLoader.Request {
+        AliasVocabularyReviewLoader.Request(
+            level: selectedLevel,
+            approvedPage: approvedPage,
+            discardedPage: discardedPage,
             pageSize: pageSize,
+            basketPageSize: basketPageSize,
             shuffleSeed: shuffleSeed,
             includeAdjectives: includeAdjectives
         )
-        loadReviewedWords(.approved)
-        loadReviewedWords(.discarded)
+    }
+
+    private func loadPage(applying change: AliasVocabularyReviewLoader.Change? = nil) {
+        let id = UUID()
+        let request = loadRequest
+        loadID = id
+        isLoading = true
+        AliasVocabularyReviewLoader.load(request, applying: change) { snapshot in
+            // A previous page/filter or an older save must never replace newer UI state.
+            guard loadID == id, loadRequest == request else { return }
+            statisticsByLevel = snapshot.statistics
+            approvedPage = snapshot.approvedPage
+            discardedPage = snapshot.discardedPage
+            pageWords = snapshot.words
+            approvedWords = snapshot.approvedWords
+            discardedWords = snapshot.discardedWords
+            isLoading = false
+            if let presentedWord,
+               snapshot.words.contains(where: { $0.id == presentedWord.id && !$0.isRevealed }) {
+                self.presentedWord = nil
+            }
+        }
+    }
+
+    private func clearWords() {
+        isLoading = true
+        pageWords = []
+        approvedWords = []
+        discardedWords = []
     }
 
     private func toggleReveal(_ word: AliasVocabulary.Word) {
         let isRevealed = !word.isRevealed
-        guard AliasVocabulary.setWordRevealed(id: word.id, isRevealed: isRevealed) else { return }
         let updatedWord = AliasVocabulary.Word(
             id: word.id,
             text: word.text,
@@ -353,51 +352,21 @@ struct AliasVocabularyPreviewScreen: View {
             decision: word.decision
         )
         replace(word, with: updatedWord)
-        loadStatistics()
         if isRevealed {
             presentedWord = updatedWord
         }
+        loadPage(applying: .reveal(word.id, isRevealed))
     }
 
     private func review(_ word: AliasVocabulary.Word, as decision: AliasVocabulary.Decision) {
-        guard word.isRevealed, AliasVocabulary.reviewWord(id: word.id, decision: decision) else { return }
-        loadPage()
+        guard word.isRevealed, pageWords.contains(where: { $0.id == word.id }) else { return }
+        pageWords.removeAll { $0.id == word.id }
+        loadPage(applying: .review(word.id, decision))
     }
 
     private func replace(_ oldWord: AliasVocabulary.Word, with newWord: AliasVocabulary.Word) {
         guard let index = pageWords.firstIndex(where: { $0.id == oldWord.id }) else { return }
         pageWords[index] = newWord
-    }
-
-    private func loadReviewedWords(_ decision: AliasVocabulary.Decision) {
-        let count = decision == .approved ? selectedStatistics.approved : selectedStatistics.discarded
-        let currentPage = decision == .approved ? approvedPage : discardedPage
-        let lastPage = max(0, (count - 1) / basketPageSize)
-        if currentPage > lastPage {
-            if decision == .approved {
-                approvedPage = lastPage
-            } else {
-                discardedPage = lastPage
-            }
-            return
-        }
-
-        let words = AliasVocabulary.reviewedWords(
-            in: selectedLevel,
-            decision: decision,
-            page: currentPage,
-            pageSize: basketPageSize,
-            includeAdjectives: includeAdjectives
-        )
-        if decision == .approved {
-            approvedWords = words
-        } else {
-            discardedWords = words
-        }
-    }
-
-    private func loadStatistics() {
-        statisticsByLevel = AliasVocabulary.statisticsByDifficulty(includeAdjectives: includeAdjectives)
     }
 
     private func changeBasketPage(for decision: AliasVocabulary.Decision, by offset: Int) {
@@ -410,13 +379,11 @@ struct AliasVocabularyPreviewScreen: View {
 
     private func move(_ word: AliasVocabulary.Word, from decision: AliasVocabulary.Decision) {
         let newDecision: AliasVocabulary.Decision = decision == .approved ? .discarded : .approved
-        guard AliasVocabulary.reviewWord(id: word.id, decision: newDecision) else { return }
-        loadPage()
+        loadPage(applying: .review(word.id, newDecision))
     }
 
     private func returnToReview(_ word: AliasVocabulary.Word) {
-        guard AliasVocabulary.returnWordToReview(id: word.id) else { return }
-        loadPage()
+        loadPage(applying: .returnToReview(word.id))
     }
 
     private func levelTitle(for level: AliasVocabulary.DifficultyLevel) -> String {
@@ -456,12 +423,13 @@ private struct AliasWordReviewModal: View {
     let onClose: () -> Void
 
     @State private var dragOffset: CGFloat = 0
+    @State private var didReview = false
 
     private var dragAccent: Color {
-        if dragOffset < -12 {
+        if dragOffset < 0 {
             return StudioTheme.teal
         }
-        if dragOffset > 12 {
+        if dragOffset > 0 {
             return StudioTheme.coral
         }
         return StudioTheme.gold
@@ -496,10 +464,18 @@ private struct AliasWordReviewModal: View {
                     .lineLimit(3)
                     .frame(maxWidth: .infinity, minHeight: 112)
                     .padding(.horizontal, 20)
-                    .background(dragAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-                    .overlay {
+                    .background {
                         RoundedRectangle(cornerRadius: 24, style: .continuous)
-                            .stroke(dragAccent.opacity(0.75), lineWidth: 2)
+                            .fill(dragAccent.opacity(0.12))
+                            .overlay {
+                                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                                    .stroke(dragAccent.opacity(0.75), lineWidth: 2)
+                            }
+                            .transaction { transaction in
+                                // Direction feedback should not inherit the spring-back animation.
+                                transaction.animation = nil
+                                transaction.disablesAnimations = true
+                            }
                     }
                     .offset(y: dragOffset)
                     .rotationEffect(.degrees(Double(dragOffset / 35)))
@@ -507,10 +483,10 @@ private struct AliasWordReviewModal: View {
                     .accessibilityAddTraits(.isButton)
                     .accessibilityHint(hint)
                     .accessibilityAction(named: Text(approveLabel)) {
-                        onReview(.approved)
+                        submitReview(.approved)
                     }
                     .accessibilityAction(named: Text(discardLabel)) {
-                        onReview(.discarded)
+                        submitReview(.discarded)
                     }
 
                 Label(discardLabel, systemImage: "arrow.down.circle.fill")
@@ -523,29 +499,42 @@ private struct AliasWordReviewModal: View {
                     .multilineTextAlignment(.center)
             }
             .padding(24)
-            .background(StudioTheme.card, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .background {
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(StudioTheme.card)
+                    .shadow(color: StudioTheme.shadowStrong, radius: 24, y: 12)
+            }
             .overlay {
                 RoundedRectangle(cornerRadius: 28, style: .continuous)
                     .stroke(StudioTheme.line.opacity(0.8))
             }
-            .shadow(color: StudioTheme.shadowStrong, radius: 24, y: 12)
             .padding(.horizontal, 20)
         }
     }
 
+    private func submitReview(_ decision: AliasVocabulary.Decision) {
+        guard !didReview else { return }
+        didReview = true
+        onReview(decision)
+    }
+
     private var reviewGesture: some Gesture {
-        DragGesture(minimumDistance: 12)
+        DragGesture(minimumDistance: 6)
             .onChanged { value in
-                guard abs(value.translation.height) > abs(value.translation.width) else { return }
-                dragOffset = value.translation.height
+                guard !didReview, abs(value.translation.height) > abs(value.translation.width) else { return }
+                var transaction = Transaction(animation: nil)
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    dragOffset = value.translation.height
+                }
             }
             .onEnded { value in
                 let translation = value.translation.height
                 let isVertical = abs(translation) > abs(value.translation.width)
                 if isVertical, translation <= -56 {
-                    onReview(.approved)
+                    submitReview(.approved)
                 } else if isVertical, translation >= 56 {
-                    onReview(.discarded)
+                    submitReview(.discarded)
                 } else {
                     withAnimation(.snappy) {
                         dragOffset = 0
@@ -742,7 +731,7 @@ private struct AliasReviewWordCard: View {
                 .stroke(decisionColor.opacity(word.decision == nil ? 0.65 : 0.9))
         }
         .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .onTapGesture(count: 2, perform: onToggleReveal)
+        .onTapGesture(perform: onToggleReveal)
         .offset(y: dragOffset)
         .opacity(Double(1 - min(abs(dragOffset) / CGFloat(240), CGFloat(0.35))))
         .simultaneousGesture(reviewGesture)

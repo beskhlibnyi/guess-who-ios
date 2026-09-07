@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A86CC82A1E12400DA9C18101 /* AliasVocabularyReviewLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A86CC82A1E12400DA9C18102 /* AliasVocabularyReviewLoader.swift */; };
 		A1B2C3D4E5F60718293A4B61 /* GuessWhoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B51 /* GuessWhoApp.swift */; };
 		A1B2C3D4E5F60718293A4B62 /* GuessWhoGameplayFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B52 /* GuessWhoGameplayFlowView.swift */; };
 		A1B2C3D4E5F60718293A4B63 /* Character.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B53 /* Character.swift */; };
@@ -33,6 +34,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A86CC82A1E12400DA9C18102 /* AliasVocabularyReviewLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasVocabularyReviewLoader.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B51 /* GuessWhoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuessWhoApp.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B52 /* GuessWhoGameplayFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/GuessWho/GuessWhoGameplayFlowView.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B53 /* Character.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Character.swift; sourceTree = "<group>"; };
@@ -123,6 +125,7 @@
 				B2C3D4E5F60718293A4B604 /* alias_uk_words.sqlite */,
 				B2C3D4E5F60718293A4B606 /* AliasVocabularyAttribution.md */,
 				B2C3D4E5F60718293A4B608 /* AliasVocabularyPreviewScreen.swift */,
+				A86CC82A1E12400DA9C18102 /* AliasVocabularyReviewLoader.swift */,
 				B2C3D4E5F60718293A4B60C /* AliasHomeScreen.swift */,
 				A1B2C3D4E5F60718293A4B6B /* Localization.swift */,
 				A1B2C3D4E5F60718293A4B43 /* Models */,
@@ -263,6 +266,7 @@
 				F0E1D2C3B4A5968778695A09 /* GuessWhoExperienceView.swift in Sources */,
 				B2C3D4E5F60718293A4B601 /* AliasVocabulary.swift in Sources */,
 				B2C3D4E5F60718293A4B607 /* AliasVocabularyPreviewScreen.swift in Sources */,
+				A86CC82A1E12400DA9C18101 /* AliasVocabularyReviewLoader.swift in Sources */,
 				B2C3D4E5F60718293A4B60B /* AliasHomeScreen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -49,8 +49,8 @@
 "alias.preview.move_to_discarded" = "Move to discarded";
 "alias.preview.return_to_review" = "Return to review";
 "alias.preview.review_complete" = "All words in this level have been reviewed.";
-"alias.preview.reveal" = "Double-tap to reveal";
-"alias.preview.hide" = "Double-tap to hide";
+"alias.preview.reveal" = "Tap to reveal";
+"alias.preview.hide" = "Tap to hide";
 "alias.preview.hidden" = "Hidden word";
 "alias.preview.modal_hint" = "Swipe up to approve or down to discard.";
 "alias.preview.close" = "Close";
@@ -60,7 +60,6 @@
 "alias.preview.level.medium" = "Medium";
 "alias.preview.level.hard" = "Hard";
 "alias.preview.level.expert" = "Expert";
-"alias.preview.page" = "Page %d of %d";
 "alias.preview.previous" = "Previous";
 "alias.preview.next" = "Next";
 "rules.title" = "How to Play";
