@@ -11,6 +11,7 @@ final class GameState: ObservableObject {
 
     enum AppScreen: Equatable {
         case gamePicker
+        case aliasMenu
         case aliasPreview
         case menu
         case rules
@@ -155,7 +156,7 @@ final class GameState: ObservableObject {
         case .guessWho:
             appScreen = .menu
         case .alias:
-            appScreen = .aliasPreview
+            appScreen = .aliasMenu
         }
     }
 
@@ -170,7 +171,17 @@ final class GameState: ObservableObject {
     }
 
     func showMenu() {
-        appScreen = .menu
+        switch selectedGame {
+        case .guessWho:
+            appScreen = .menu
+        case .alias:
+            appScreen = .aliasMenu
+        }
+    }
+
+    func showAliasReview() {
+        guard selectedGame == .alias else { return }
+        appScreen = .aliasPreview
     }
 
     func showGamePicker() {

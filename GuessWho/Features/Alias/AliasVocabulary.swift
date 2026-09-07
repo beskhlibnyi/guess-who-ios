@@ -4,6 +4,7 @@ import SQLite3
 /// Reads and updates the scored Ukrainian Alias deck without loading every word into memory.
 enum AliasVocabulary {
     private static let reviewShuffleSeedKey = "aliasVocabularyReviewShuffleSeed"
+    static let includeAdjectivesKey = "aliasVocabularyIncludeAdjectives"
 
     enum DifficultyLevel: CaseIterable, Hashable, Sendable {
         case easy
@@ -59,11 +60,13 @@ enum AliasVocabulary {
         let decision: Decision?
     }
 
-    struct ReviewCounts: Equatable, Sendable {
+    struct Statistics: Equatable, Sendable {
+        let total: Int
+        let revealed: Int
         let approved: Int
         let discarded: Int
 
-        static let zero = ReviewCounts(approved: 0, discarded: 0)
+        static let zero = Statistics(total: 0, revealed: 0, approved: 0, discarded: 0)
     }
 
     static let sourceName = "mphdict Ukrainian grammatical dictionary"
@@ -81,53 +84,52 @@ enum AliasVocabulary {
         return seed
     }
 
-    static func wordCount() -> Int {
-        query("SELECT COUNT(*) FROM words WHERE enabled = 1") { statement in
-            guard sqlite3_step(statement) == SQLITE_ROW else { return 0 }
-            return Int(sqlite3_column_int(statement, 0))
-        } ?? 0
-    }
-
-    static func pendingWordCount(in level: DifficultyLevel) -> Int {
-        query(
-            """
-            SELECT COUNT(*) FROM words
-            WHERE enabled = 1
-              AND approved = 0
-              AND discarded = 0
-              AND \(level.predicateSQL)
-            """,
-            bindings: level.bounds
-        ) { statement in
-            guard sqlite3_step(statement) == SQLITE_ROW else { return 0 }
-            return Int(sqlite3_column_int(statement, 0))
-        } ?? 0
-    }
-
-    static func reviewCounts(in level: DifficultyLevel) -> ReviewCounts {
+    static func statisticsByDifficulty(includeAdjectives: Bool) -> [DifficultyLevel: Statistics] {
         query(
             """
             SELECT
+              CASE
+                WHEN difficulty < 2 THEN 0
+                WHEN difficulty < 3 THEN 1
+                WHEN difficulty < 4 THEN 2
+                ELSE 3
+              END AS difficulty_level,
+              COUNT(*),
+              COALESCE(SUM(revealed), 0),
               COALESCE(SUM(approved), 0),
               COALESCE(SUM(discarded), 0)
             FROM words
-            WHERE enabled = 1 AND \(level.predicateSQL)
-            """,
-            bindings: level.bounds
+            WHERE enabled = 1
+              AND \(playablePartOfSpeechPredicate(includeAdjectives: includeAdjectives))
+            GROUP BY difficulty_level
+            """
         ) { statement in
-            guard sqlite3_step(statement) == SQLITE_ROW else { return .zero }
-            return ReviewCounts(
-                approved: Int(sqlite3_column_int(statement, 0)),
-                discarded: Int(sqlite3_column_int(statement, 1))
-            )
-        } ?? .zero
+            var statistics: [DifficultyLevel: Statistics] = [:]
+            while sqlite3_step(statement) == SQLITE_ROW {
+                let level: DifficultyLevel
+                switch sqlite3_column_int(statement, 0) {
+                case 0: level = .easy
+                case 1: level = .medium
+                case 2: level = .hard
+                default: level = .expert
+                }
+                statistics[level] = Statistics(
+                    total: Int(sqlite3_column_int(statement, 1)),
+                    revealed: Int(sqlite3_column_int(statement, 2)),
+                    approved: Int(sqlite3_column_int(statement, 3)),
+                    discarded: Int(sqlite3_column_int(statement, 4))
+                )
+            }
+            return statistics
+        } ?? [:]
     }
 
     static func words(
         in level: DifficultyLevel,
         page: Int,
         pageSize: Int,
-        shuffleSeed: Int64
+        shuffleSeed: Int64,
+        includeAdjectives: Bool
     ) -> [Word] {
         let offset = max(0, page * pageSize)
         guard let database = openDatabase() else {
@@ -140,6 +142,7 @@ enum AliasVocabulary {
             SELECT id, word, revealed, approved, discarded
             FROM words
             WHERE enabled = 1
+              AND \(playablePartOfSpeechPredicate(includeAdjectives: includeAdjectives))
               AND approved = 0
               AND discarded = 0
               AND \(level.predicateSQL)
@@ -182,7 +185,8 @@ enum AliasVocabulary {
         in level: DifficultyLevel,
         decision: Decision,
         page: Int,
-        pageSize: Int
+        pageSize: Int,
+        includeAdjectives: Bool
     ) -> [Word] {
         let offset = max(0, page * pageSize)
         guard let database = openDatabase() else {
@@ -195,6 +199,7 @@ enum AliasVocabulary {
             SELECT id, word, revealed, approved, discarded
             FROM words
             WHERE enabled = 1
+              AND \(playablePartOfSpeechPredicate(includeAdjectives: includeAdjectives))
               AND \(decision.columnName) = 1
               AND \(level.predicateSQL)
             ORDER BY word
@@ -296,6 +301,12 @@ enum AliasVocabulary {
         }
 
         return transform(statement)
+    }
+
+    private static func playablePartOfSpeechPredicate(includeAdjectives: Bool) -> String {
+        includeAdjectives
+            ? "part_of_speech IN ('noun', 'adjective')"
+            : "part_of_speech = 'noun'"
     }
 
     private static func openDatabase() -> OpaquePointer? {

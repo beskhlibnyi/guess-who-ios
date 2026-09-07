@@ -290,7 +290,7 @@ rows.each do |row|
   candidate["enabled"] = !candidate.fetch("isProperName") &&
     !candidate.fetch("isPhrase") &&
     !candidate.fetch("isAbbreviation") &&
-    %w[noun verb adjective].include?(pos)
+    %w[noun adjective].include?(pos)
 
   existing = candidates_by_word[word]
   if existing

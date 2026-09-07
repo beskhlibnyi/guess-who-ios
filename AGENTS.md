@@ -34,7 +34,7 @@
 ## Alias Vocabulary
 
 - The Alias UI can be localized in English and Ukrainian, but every card word is Ukrainian regardless of the active UI language.
-- `alias_uk_words.sqlite` contains a `words` table with `word`, `part_of_speech`, `source`, `frequency`, `difficulty`, proper-name/phrase/abbreviation flags, and `enabled`. It contains 249,499 normalized unique candidates and 186,860 default-enabled noun, verb, and adjective cards.
+- `alias_uk_words.sqlite` contains a `words` table with `word`, `part_of_speech`, `source`, `frequency`, `difficulty`, proper-name/phrase/abbreviation flags, and `enabled`. It contains 249,499 normalized unique candidates and 139,677 default-enabled noun and adjective cards. Verbs are never playable; adjectives can be included or excluded with the persisted Alias vocabulary setting.
 - The default pool excludes structural non-game cards: proper names, phrases, abbreviations, and unsupported parts of speech. It does not remove rare, specialist, or long valid words; those receive a higher difficulty score instead.
 - Runtime queries must filter `enabled = 1` and select by difficulty as needed. Do not add a second flat `.txt` or `.json` vocabulary resource alongside the SQLite deck.
 - `GuessWho/Features/Alias/AliasVocabularyPreviewScreen.swift` is intentionally read-only. It pages 24 words at a time to inspect the dataset and is not an Alias game implementation.

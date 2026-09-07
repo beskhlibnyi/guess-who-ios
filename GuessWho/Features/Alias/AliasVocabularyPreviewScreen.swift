@@ -3,23 +3,32 @@ import SwiftUI
 /// Persistent word-review screen for preparing the Alias game deck.
 struct AliasVocabularyPreviewScreen: View {
     @EnvironmentObject private var gameState: GameState
+    @AppStorage(AliasVocabulary.includeAdjectivesKey) private var includeAdjectives = true
     @State private var selectedLevel: AliasVocabulary.DifficultyLevel = .easy
     @State private var page = 0
     @State private var pageWords: [AliasVocabulary.Word] = []
     @State private var approvedWords: [AliasVocabulary.Word] = []
     @State private var discardedWords: [AliasVocabulary.Word] = []
-    @State private var reviewCounts = AliasVocabulary.ReviewCounts.zero
-    @State private var pendingWordCount = 0
-    @State private var totalWordCount = 0
+    @State private var statisticsByLevel: [AliasVocabulary.DifficultyLevel: AliasVocabulary.Statistics] = [:]
     @State private var shuffleSeed = AliasVocabulary.persistentReviewShuffleSeed()
     @State private var approvedPage = 0
     @State private var discardedPage = 0
     @State private var approvedBasketExpanded = false
     @State private var discardedBasketExpanded = false
+    @State private var difficultyStatisticsExpanded = false
+    @State private var presentedWord: AliasVocabulary.Word?
 
     private let pageSize = 9
     private let basketPageSize = 9
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
+
+    private var selectedStatistics: AliasVocabulary.Statistics {
+        statisticsByLevel[selectedLevel] ?? .zero
+    }
+
+    private var pendingWordCount: Int {
+        max(0, selectedStatistics.total - selectedStatistics.approved - selectedStatistics.discarded)
+    }
 
     private var pageCount: Int {
         max(1, (pendingWordCount + pageSize - 1) / pageSize)
@@ -52,40 +61,103 @@ struct AliasVocabularyPreviewScreen: View {
                 page = 0
             }
         }
+        .onChange(of: includeAdjectives) { _, _ in
+            presentedWord = nil
+            approvedPage = 0
+            discardedPage = 0
+            if page == 0 {
+                loadPage()
+            } else {
+                page = 0
+            }
+        }
+        .fullScreenCover(item: $presentedWord) { word in
+            AliasWordReviewModal(
+                word: word,
+                approveLabel: copy("alias.preview.approve", fallback: "Approve"),
+                discardLabel: copy("alias.preview.discard", fallback: "Discard"),
+                hint: copy(
+                    "alias.preview.modal_hint",
+                    fallback: "Swipe up to approve or down to discard."
+                ),
+                closeLabel: copy("alias.preview.close", fallback: "Close"),
+                onReview: { decision in
+                    presentedWord = nil
+                    review(word, as: decision)
+                },
+                onClose: {
+                    presentedWord = nil
+                }
+            )
+            .presentationBackground(.clear)
+            .interactiveDismissDisabled()
+        }
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 18) {
             HStack {
-                Button(copy("home.games", fallback: "Games"), action: gameState.showGamePicker)
+                Button(copy("common.back", fallback: "Back"), action: gameState.showMenu)
                     .buttonStyle(ActionButtonStyle(kind: .ghost))
                 Spacer()
                 Image(systemName: "text.bubble.fill")
                     .foregroundStyle(StudioTheme.gold)
             }
 
-            Text(copy("alias.preview.title", fallback: "Review Ukrainian words"))
+            Text(copy("alias.statistics.title", fallback: "Deck statistics"))
                 .font(StudioTypography.displaySmall)
                 .foregroundStyle(StudioTheme.ink)
-            Text(copy("alias.preview.message", fallback: "Double-tap to reveal or hide, then swipe up to approve or down to discard."))
-                .font(StudioTypography.body)
-                .foregroundStyle(StudioTheme.muted)
-            HStack(spacing: 10) {
-                Text(levelTitle(for: selectedLevel))
-                    .font(StudioTypography.compactLabel)
-                    .foregroundStyle(Color.white)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(levelAccent(for: selectedLevel), in: Capsule())
 
-                Text(guessWhoLocalizedFormat("alias.preview.remaining", fallback: "%d words remaining", pendingWordCount))
-                    .font(StudioTypography.compactLabel)
-                    .foregroundStyle(StudioTheme.gold)
+            Toggle(isOn: $includeAdjectives) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(copy("alias.filter.adjectives", fallback: "Include adjectives"))
+                        .font(StudioTypography.label)
+                        .foregroundStyle(StudioTheme.ink)
+                    Text(copy("alias.filter.adjectives.message", fallback: "Nouns are always included."))
+                        .font(StudioTypography.footnote)
+                        .foregroundStyle(StudioTheme.muted)
+                }
             }
+            .tint(StudioTheme.teal)
 
-            Text(guessWhoLocalizedFormat("alias.preview.total", fallback: "%d words total", totalWordCount))
-                .font(StudioTypography.footnote)
+            statisticsSection(
+                title: levelTitle(for: selectedLevel),
+                statistics: selectedStatistics,
+                accent: levelAccent(for: selectedLevel)
+            )
+
+            Button {
+                withAnimation(.snappy) {
+                    difficultyStatisticsExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    Text(copy("alias.statistics.other_difficulties", fallback: "Other difficulty levels"))
+                        .font(StudioTypography.label)
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .font(StudioTypography.compactLabel)
+                        .rotationEffect(.degrees(difficultyStatisticsExpanded ? 180 : 0))
+                }
                 .foregroundStyle(StudioTheme.muted)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            if difficultyStatisticsExpanded {
+                Divider()
+
+                VStack(alignment: .leading, spacing: 16) {
+                    ForEach(AliasVocabulary.DifficultyLevel.allCases.filter { $0 != selectedLevel }, id: \.self) { level in
+                        statisticsSection(
+                            title: levelTitle(for: level),
+                            statistics: statisticsByLevel[level] ?? .zero,
+                            accent: levelAccent(for: level)
+                        )
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
         .padding(24)
         .background(StudioTheme.card, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
@@ -93,6 +165,56 @@ struct AliasVocabularyPreviewScreen: View {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .stroke(StudioTheme.line.opacity(0.8))
         }
+    }
+
+    private func statisticsSection(
+        title: String,
+        statistics: AliasVocabulary.Statistics,
+        accent: Color
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(title)
+                .font(StudioTypography.label)
+                .foregroundStyle(accent)
+
+            HStack(spacing: 8) {
+                statisticCell(
+                    value: statistics.total,
+                    label: copy("alias.statistics.total", fallback: "Total")
+                )
+                statisticCell(
+                    value: statistics.revealed,
+                    label: copy("alias.statistics.revealed", fallback: "Revealed")
+                )
+                statisticCell(
+                    value: statistics.approved,
+                    label: copy("alias.statistics.approved", fallback: "Approved")
+                )
+                statisticCell(
+                    value: statistics.discarded,
+                    label: copy("alias.statistics.discarded", fallback: "Discarded")
+                )
+            }
+        }
+    }
+
+    private func statisticCell(value: Int, label: String) -> some View {
+        VStack(spacing: 3) {
+            Text(value.formatted())
+                .font(StudioTypography.subheadline)
+                .foregroundStyle(StudioTheme.ink)
+                .lineLimit(1)
+                .minimumScaleFactor(0.65)
+            Text(label)
+                .font(StudioTypography.footnote)
+                .foregroundStyle(StudioTheme.muted)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(Color.white.opacity(0.52), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .accessibilityElement(children: .combine)
     }
 
     private var levelTabs: some View {
@@ -119,7 +241,7 @@ struct AliasVocabularyPreviewScreen: View {
     ) -> some View {
         let isApproved = decision == .approved
         let accent = isApproved ? StudioTheme.teal : StudioTheme.coral
-        let count = isApproved ? reviewCounts.approved : reviewCounts.discarded
+        let count = isApproved ? selectedStatistics.approved : selectedStatistics.discarded
         let words = isApproved ? approvedWords : discardedWords
         let basketPage = isApproved ? approvedPage : discardedPage
         let key = isApproved ? "alias.preview.approved" : "alias.preview.discarded"
@@ -204,9 +326,7 @@ struct AliasVocabularyPreviewScreen: View {
     }
 
     private func loadPage() {
-        totalWordCount = AliasVocabulary.wordCount()
-        pendingWordCount = AliasVocabulary.pendingWordCount(in: selectedLevel)
-        reviewCounts = AliasVocabulary.reviewCounts(in: selectedLevel)
+        loadStatistics()
         let lastPage = max(0, (pendingWordCount - 1) / pageSize)
         if page > lastPage {
             page = lastPage
@@ -216,7 +336,8 @@ struct AliasVocabularyPreviewScreen: View {
             in: selectedLevel,
             page: page,
             pageSize: pageSize,
-            shuffleSeed: shuffleSeed
+            shuffleSeed: shuffleSeed,
+            includeAdjectives: includeAdjectives
         )
         loadReviewedWords(.approved)
         loadReviewedWords(.discarded)
@@ -225,7 +346,17 @@ struct AliasVocabularyPreviewScreen: View {
     private func toggleReveal(_ word: AliasVocabulary.Word) {
         let isRevealed = !word.isRevealed
         guard AliasVocabulary.setWordRevealed(id: word.id, isRevealed: isRevealed) else { return }
-        replace(word, with: AliasVocabulary.Word(id: word.id, text: word.text, isRevealed: isRevealed, decision: word.decision))
+        let updatedWord = AliasVocabulary.Word(
+            id: word.id,
+            text: word.text,
+            isRevealed: isRevealed,
+            decision: word.decision
+        )
+        replace(word, with: updatedWord)
+        loadStatistics()
+        if isRevealed {
+            presentedWord = updatedWord
+        }
     }
 
     private func review(_ word: AliasVocabulary.Word, as decision: AliasVocabulary.Decision) {
@@ -239,7 +370,7 @@ struct AliasVocabularyPreviewScreen: View {
     }
 
     private func loadReviewedWords(_ decision: AliasVocabulary.Decision) {
-        let count = decision == .approved ? reviewCounts.approved : reviewCounts.discarded
+        let count = decision == .approved ? selectedStatistics.approved : selectedStatistics.discarded
         let currentPage = decision == .approved ? approvedPage : discardedPage
         let lastPage = max(0, (count - 1) / basketPageSize)
         if currentPage > lastPage {
@@ -255,13 +386,18 @@ struct AliasVocabularyPreviewScreen: View {
             in: selectedLevel,
             decision: decision,
             page: currentPage,
-            pageSize: basketPageSize
+            pageSize: basketPageSize,
+            includeAdjectives: includeAdjectives
         )
         if decision == .approved {
             approvedWords = words
         } else {
             discardedWords = words
         }
+    }
+
+    private func loadStatistics() {
+        statisticsByLevel = AliasVocabulary.statisticsByDifficulty(includeAdjectives: includeAdjectives)
     }
 
     private func changeBasketPage(for decision: AliasVocabulary.Decision, by offset: Int) {
@@ -307,6 +443,115 @@ struct AliasVocabularyPreviewScreen: View {
         case .expert:
             return StudioTheme.inkSoft
         }
+    }
+}
+
+private struct AliasWordReviewModal: View {
+    let word: AliasVocabulary.Word
+    let approveLabel: String
+    let discardLabel: String
+    let hint: String
+    let closeLabel: String
+    let onReview: (AliasVocabulary.Decision) -> Void
+    let onClose: () -> Void
+
+    @State private var dragOffset: CGFloat = 0
+
+    private var dragAccent: Color {
+        if dragOffset < -12 {
+            return StudioTheme.teal
+        }
+        if dragOffset > 12 {
+            return StudioTheme.coral
+        }
+        return StudioTheme.gold
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.24)
+                .ignoresSafeArea()
+
+            VStack(spacing: 18) {
+                HStack {
+                    Spacer()
+                    Button(action: onClose) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(StudioTheme.muted)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(closeLabel)
+                }
+
+                Label(approveLabel, systemImage: "arrow.up.circle.fill")
+                    .font(StudioTypography.compactLabel)
+                    .foregroundStyle(StudioTheme.teal)
+
+                Text(word.text)
+                    .font(StudioTypography.displaySmall)
+                    .foregroundStyle(StudioTheme.ink)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.55)
+                    .lineLimit(3)
+                    .frame(maxWidth: .infinity, minHeight: 112)
+                    .padding(.horizontal, 20)
+                    .background(dragAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 24, style: .continuous)
+                            .stroke(dragAccent.opacity(0.75), lineWidth: 2)
+                    }
+                    .offset(y: dragOffset)
+                    .rotationEffect(.degrees(Double(dragOffset / 35)))
+                    .highPriorityGesture(reviewGesture)
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityHint(hint)
+                    .accessibilityAction(named: Text(approveLabel)) {
+                        onReview(.approved)
+                    }
+                    .accessibilityAction(named: Text(discardLabel)) {
+                        onReview(.discarded)
+                    }
+
+                Label(discardLabel, systemImage: "arrow.down.circle.fill")
+                    .font(StudioTypography.compactLabel)
+                    .foregroundStyle(StudioTheme.coral)
+
+                Text(hint)
+                    .font(StudioTypography.footnote)
+                    .foregroundStyle(StudioTheme.muted)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(24)
+            .background(StudioTheme.card, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .stroke(StudioTheme.line.opacity(0.8))
+            }
+            .shadow(color: StudioTheme.shadowStrong, radius: 24, y: 12)
+            .padding(.horizontal, 20)
+        }
+    }
+
+    private var reviewGesture: some Gesture {
+        DragGesture(minimumDistance: 12)
+            .onChanged { value in
+                guard abs(value.translation.height) > abs(value.translation.width) else { return }
+                dragOffset = value.translation.height
+            }
+            .onEnded { value in
+                let translation = value.translation.height
+                let isVertical = abs(translation) > abs(value.translation.width)
+                if isVertical, translation <= -56 {
+                    onReview(.approved)
+                } else if isVertical, translation >= 56 {
+                    onReview(.discarded)
+                } else {
+                    withAnimation(.snappy) {
+                        dragOffset = 0
+                    }
+                }
+            }
     }
 }
 
