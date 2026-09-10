@@ -34,6 +34,8 @@
 		B2C3D4E5F60718293A4B607 /* AliasVocabularyPreviewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B608 /* AliasVocabularyPreviewScreen.swift */; };
 		B2C3D4E5F60718293A4B609 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B60A /* libsqlite3.tbd */; };
 		B2C3D4E5F60718293A4B60B /* AliasHomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B60C /* AliasHomeScreen.swift */; };
+		D4E5F60718293A4B60C7001 /* AliasGameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F60718293A4B60C7002 /* AliasGameState.swift */; };
+		D4E5F60718293A4B60C7003 /* AliasGameplayScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F60718293A4B60C7004 /* AliasGameplayScreen.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -69,6 +71,8 @@
 		B2C3D4E5F60718293A4B608 /* AliasVocabularyPreviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasVocabularyPreviewScreen.swift; sourceTree = "<group>"; };
 		B2C3D4E5F60718293A4B60A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
 		B2C3D4E5F60718293A4B60C /* AliasHomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasHomeScreen.swift; sourceTree = "<group>"; };
+		D4E5F60718293A4B60C7002 /* AliasGameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasGameState.swift; sourceTree = "<group>"; };
+		D4E5F60718293A4B60C7004 /* AliasGameplayScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasGameplayScreen.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +142,8 @@
 				C793F001AABBCCDD00112202 /* AliasStatisticsFunnel.swift */,
 				A86CC82A1E12400DA9C18102 /* AliasVocabularyReviewLoader.swift */,
 				B2C3D4E5F60718293A4B60C /* AliasHomeScreen.swift */,
+				D4E5F60718293A4B60C7002 /* AliasGameState.swift */,
+				D4E5F60718293A4B60C7004 /* AliasGameplayScreen.swift */,
 				A1B2C3D4E5F60718293A4B6B /* Localization.swift */,
 				A1B2C3D4E5F60718293A4B43 /* Models */,
 				A1B2C3D4E5F60718293A4B69 /* Localizable.strings */,
@@ -282,6 +288,8 @@
 				C793F001AABBCCDD00112201 /* AliasStatisticsFunnel.swift in Sources */,
 				A86CC82A1E12400DA9C18101 /* AliasVocabularyReviewLoader.swift in Sources */,
 				B2C3D4E5F60718293A4B60B /* AliasHomeScreen.swift in Sources */,
+				D4E5F60718293A4B60C7001 /* AliasGameState.swift in Sources */,
+				D4E5F60718293A4B60C7003 /* AliasGameplayScreen.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -13,6 +13,7 @@ final class GameState: ObservableObject {
         case gamePicker
         case aliasMenu
         case aliasPreview
+        case aliasGame
         case menu
         case rules
         case game
@@ -182,6 +183,11 @@ final class GameState: ObservableObject {
     func showAliasReview() {
         guard selectedGame == .alias else { return }
         appScreen = .aliasPreview
+    }
+
+    func showAliasGame() {
+        guard selectedGame == .alias else { return }
+        appScreen = .aliasGame
     }
 
     func showGamePicker() {

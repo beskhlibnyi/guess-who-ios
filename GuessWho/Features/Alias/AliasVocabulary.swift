@@ -239,6 +239,57 @@ enum AliasVocabulary {
         return words
     }
 
+    /// Returns a deterministic shuffled page for live play. Expert-only words
+    /// stay in the review tool until difficulty controls are added to setup.
+    static func gameplayWords(
+        page: Int,
+        pageSize: Int,
+        shuffleSeed: Int64,
+        includeAdjectives: Bool
+    ) -> [Word] {
+        let offset = max(0, page * pageSize)
+        guard let database = openDatabase() else {
+            return []
+        }
+        defer { sqlite3_close(database) }
+
+        var statement: OpaquePointer?
+        let sql = """
+            SELECT id, word, revealed, approved, discarded
+            FROM words
+            WHERE enabled = 1
+              AND \(playablePartOfSpeechPredicate(includeAdjectives: includeAdjectives))
+              AND discarded = 0
+              AND difficulty < \(DifficultyCutoffs.hardUpper)
+            ORDER BY ((id * ?) % 2147483647), id
+            LIMIT ? OFFSET ?
+            """
+        guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK,
+              let statement else {
+            return []
+        }
+        defer { sqlite3_finalize(statement) }
+
+        sqlite3_bind_int64(statement, 1, shuffleSeed)
+        sqlite3_bind_int(statement, 2, Int32(pageSize))
+        sqlite3_bind_int(statement, 3, Int32(offset))
+
+        var words: [Word] = []
+        while sqlite3_step(statement) == SQLITE_ROW,
+              let value = sqlite3_column_text(statement, 1) {
+            let approved = sqlite3_column_int(statement, 3) == 1
+            words.append(
+                Word(
+                    id: sqlite3_column_int64(statement, 0),
+                    text: String(cString: value),
+                    isRevealed: sqlite3_column_int(statement, 2) == 1,
+                    decision: approved ? .approved : nil
+                )
+            )
+        }
+        return words
+    }
+
     @discardableResult
     static func setWordRevealed(id: Int64, isRevealed: Bool) -> Bool {
         update(

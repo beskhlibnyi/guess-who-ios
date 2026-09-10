@@ -17,6 +17,8 @@ struct GuessWhoExperienceView: View {
                     AliasHomeScreen()
                 case .aliasPreview:
                     AliasVocabularyPreviewScreen()
+                case .aliasGame:
+                    AliasGameplayScreen()
                 case .menu:
                     GuessWhoHomeScreen()
                 case .rules:
