@@ -139,7 +139,8 @@ struct LauncherSettingsDrawer: View {
             .accessibilityAddTraits(.isButton)
             .accessibilityAction { toggleDrawer() }
             .frame(width: railWidth)
-            .frame(maxHeight: .infinity)
+            .frame(maxHeight: .infinity, alignment: .bottom)
+            .padding(.bottom, 72)
     }
 
     private func languageOption(_ language: GuessWhoLanguage, title: String) -> some View {

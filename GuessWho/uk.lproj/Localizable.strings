@@ -34,6 +34,9 @@
 "alias.menu.play" = "Грати";
 "alias.menu.review" = "Перевірити";
 "alias.menu.coming_soon" = "Незабаром";
+"alias.statistics.of_total" = "%@ від усіх слів";
+"alias.statistics.of_revealed" = "%@ від відкритих слів";
+"alias.statistics.unavailable" = "На попередньому етапі ще немає слів";
 "alias.statistics.title" = "Статистика колоди";
 "alias.statistics.other_difficulties" = "Інші рівні складності";
 "alias.statistics.total" = "Усього";

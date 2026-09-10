@@ -117,7 +117,7 @@ struct AliasVocabularyPreviewScreen: View {
             }
             .tint(StudioTheme.teal)
 
-            statisticsSection(
+            AliasStatisticsFunnel(
                 title: levelTitle(for: selectedLevel),
                 statistics: selectedStatistics,
                 accent: levelAccent(for: selectedLevel)
@@ -146,7 +146,7 @@ struct AliasVocabularyPreviewScreen: View {
 
                 VStack(alignment: .leading, spacing: 16) {
                     ForEach(AliasVocabulary.DifficultyLevel.allCases.filter { $0 != selectedLevel }, id: \.self) { level in
-                        statisticsSection(
+                        AliasStatisticsFunnel(
                             title: levelTitle(for: level),
                             statistics: statisticsByLevel[level] ?? .zero,
                             accent: levelAccent(for: level)
@@ -162,56 +162,6 @@ struct AliasVocabularyPreviewScreen: View {
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .stroke(StudioTheme.line.opacity(0.8))
         }
-    }
-
-    private func statisticsSection(
-        title: String,
-        statistics: AliasVocabulary.Statistics,
-        accent: Color
-    ) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(title)
-                .font(StudioTypography.label)
-                .foregroundStyle(accent)
-
-            HStack(spacing: 8) {
-                statisticCell(
-                    value: statistics.total,
-                    label: copy("alias.statistics.total", fallback: "Total")
-                )
-                statisticCell(
-                    value: statistics.revealed,
-                    label: copy("alias.statistics.revealed", fallback: "Revealed")
-                )
-                statisticCell(
-                    value: statistics.approved,
-                    label: copy("alias.statistics.approved", fallback: "Approved")
-                )
-                statisticCell(
-                    value: statistics.discarded,
-                    label: copy("alias.statistics.discarded", fallback: "Discarded")
-                )
-            }
-        }
-    }
-
-    private func statisticCell(value: Int, label: String) -> some View {
-        VStack(spacing: 3) {
-            Text(value.formatted())
-                .font(StudioTypography.subheadline)
-                .foregroundStyle(StudioTheme.ink)
-                .lineLimit(1)
-                .minimumScaleFactor(0.65)
-            Text(label)
-                .font(StudioTypography.footnote)
-                .foregroundStyle(StudioTheme.muted)
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .background(Color.white.opacity(0.52), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .accessibilityElement(children: .combine)
     }
 
     private var levelTabs: some View {

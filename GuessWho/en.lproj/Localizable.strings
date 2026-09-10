@@ -34,6 +34,9 @@
 "alias.menu.play" = "Play";
 "alias.menu.review" = "Review";
 "alias.menu.coming_soon" = "Coming soon";
+"alias.statistics.of_total" = "%@ of total";
+"alias.statistics.of_revealed" = "%@ of revealed";
+"alias.statistics.unavailable" = "No words in the previous stage";
 "alias.statistics.title" = "Deck statistics";
 "alias.statistics.other_difficulties" = "Other difficulty levels";
 "alias.statistics.total" = "Total";
