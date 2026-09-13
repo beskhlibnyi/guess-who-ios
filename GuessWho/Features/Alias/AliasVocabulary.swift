@@ -43,6 +43,15 @@ enum AliasVocabulary {
                 return [DifficultyCutoffs.hardUpper]
             }
         }
+
+        fileprivate var gameplayBucket: Int {
+            switch self {
+            case .easy: return 0
+            case .medium: return 1
+            case .hard: return 2
+            case .expert: return 3
+            }
+        }
     }
 
     enum Decision: Sendable {
@@ -239,14 +248,17 @@ enum AliasVocabulary {
         return words
     }
 
-    /// Returns a deterministic shuffled page for live play. Expert-only words
-    /// stay in the review tool until difficulty controls are added to setup.
+    /// Returns a deterministic shuffled page for the selected live-play groups.
     static func gameplayWords(
         page: Int,
         pageSize: Int,
         shuffleSeed: Int64,
+        difficultyLevels: Set<DifficultyLevel>,
         includeAdjectives: Bool
     ) -> [Word] {
+        let orderedLevels = DifficultyLevel.allCases.filter(difficultyLevels.contains)
+        guard !orderedLevels.isEmpty else { return [] }
+
         let offset = max(0, page * pageSize)
         guard let database = openDatabase() else {
             return []
@@ -254,13 +266,19 @@ enum AliasVocabulary {
         defer { sqlite3_close(database) }
 
         var statement: OpaquePointer?
+        let difficultyPlaceholders = Array(repeating: "?", count: orderedLevels.count).joined(separator: ", ")
         let sql = """
             SELECT id, word, revealed, approved, discarded
             FROM words
             WHERE enabled = 1
               AND \(playablePartOfSpeechPredicate(includeAdjectives: includeAdjectives))
               AND discarded = 0
-              AND difficulty < \(DifficultyCutoffs.hardUpper)
+              AND CASE
+                    WHEN difficulty < \(DifficultyCutoffs.easyUpper) THEN 0
+                    WHEN difficulty < \(DifficultyCutoffs.mediumUpper) THEN 1
+                    WHEN difficulty < \(DifficultyCutoffs.hardUpper) THEN 2
+                    ELSE 3
+                  END IN (\(difficultyPlaceholders))
             ORDER BY ((id * ?) % 2147483647), id
             LIMIT ? OFFSET ?
             """
@@ -270,9 +288,13 @@ enum AliasVocabulary {
         }
         defer { sqlite3_finalize(statement) }
 
-        sqlite3_bind_int64(statement, 1, shuffleSeed)
-        sqlite3_bind_int(statement, 2, Int32(pageSize))
-        sqlite3_bind_int(statement, 3, Int32(offset))
+        for (index, level) in orderedLevels.enumerated() {
+            sqlite3_bind_int(statement, Int32(index + 1), Int32(level.gameplayBucket))
+        }
+        let shuffleIndex = Int32(orderedLevels.count + 1)
+        sqlite3_bind_int64(statement, shuffleIndex, shuffleSeed)
+        sqlite3_bind_int(statement, shuffleIndex + 1, Int32(pageSize))
+        sqlite3_bind_int(statement, shuffleIndex + 2, Int32(offset))
 
         var words: [Word] = []
         while sqlite3_step(statement) == SQLITE_ROW,

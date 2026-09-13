@@ -5,6 +5,11 @@ struct AliasHomeScreen: View {
     @EnvironmentObject private var gameState: GameState
     @EnvironmentObject private var aliasGameState: AliasGameState
     @AppStorage(AliasGameState.targetScoreKey) private var targetScore = AliasGameState.defaultTargetScore
+    @AppStorage(AliasGameState.turnDurationKey) private var turnDuration = AliasGameState.defaultTurnDuration
+    @AppStorage(AliasGameState.easyWordsKey) private var includesEasyWords = true
+    @AppStorage(AliasGameState.mediumWordsKey) private var includesMediumWords = true
+    @AppStorage(AliasGameState.hardWordsKey) private var includesHardWords = true
+    @AppStorage(AliasGameState.expertWordsKey) private var includesExpertWords = false
     @AppStorage(AliasVocabulary.includeAdjectivesKey) private var includeAdjectives = true
     @State private var showsNewMatchConfirmation = false
 
@@ -27,6 +32,14 @@ struct AliasHomeScreen: View {
         .onAppear {
             if !AliasGameState.targetScoreOptions.contains(targetScore) {
                 targetScore = AliasGameState.defaultTargetScore
+            }
+            if !AliasGameState.turnDurationOptions.contains(turnDuration) {
+                turnDuration = AliasGameState.defaultTurnDuration
+            }
+            if selectedDifficultyLevels.isEmpty {
+                includesEasyWords = true
+                includesMediumWords = true
+                includesHardWords = true
             }
         }
     }
@@ -53,6 +66,9 @@ struct AliasHomeScreen: View {
                 .foregroundStyle(StudioTheme.muted)
 
             goalPicker
+            turnDurationPicker
+            difficultyPicker
+            adjectivesPicker
 
             if aliasGameState.canResume {
                 Button(copy("alias.menu.resume", fallback: "Resume Match")) {
@@ -102,6 +118,113 @@ struct AliasHomeScreen: View {
         }
     }
 
+    private var turnDurationPicker: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(copy("alias.menu.time", fallback: "Turn time"))
+                .font(StudioTypography.label)
+                .foregroundStyle(StudioTheme.ink)
+
+            HStack(spacing: 8) {
+                ForEach(AliasGameState.turnDurationOptions, id: \.self) { option in
+                    setupOptionButton(
+                        title: copy("alias.menu.time.option", fallback: "%d sec", option),
+                        accessibilityLabel: copy("alias.menu.time.accessibility", fallback: "%d seconds", option),
+                        isSelected: turnDuration == option
+                    ) {
+                        turnDuration = option
+                    }
+                }
+            }
+        }
+    }
+
+    private var difficultyPicker: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(copy("alias.menu.groups", fallback: "Word groups"))
+                .font(StudioTypography.label)
+                .foregroundStyle(StudioTheme.ink)
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                ForEach(AliasVocabulary.DifficultyLevel.allCases, id: \.self) { level in
+                    let isSelected = selectedDifficultyLevels.contains(level)
+                    setupOptionButton(
+                        title: difficultyName(level),
+                        accessibilityLabel: difficultyName(level),
+                        isSelected: isSelected
+                    ) {
+                        toggleDifficulty(level)
+                    }
+                    .disabled(isSelected && selectedDifficultyLevels.count == 1)
+                }
+            }
+
+            Text(copy("alias.menu.groups.message", fallback: "Choose one or more difficulty groups."))
+                .font(StudioTypography.footnote)
+                .foregroundStyle(StudioTheme.muted)
+        }
+    }
+
+    private var adjectivesPicker: some View {
+        Toggle(isOn: $includeAdjectives) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(copy("alias.filter.adjectives", fallback: "Include adjectives"))
+                    .font(StudioTypography.label)
+                    .foregroundStyle(StudioTheme.ink)
+                Text(copy("alias.filter.adjectives.message", fallback: "Nouns are always included."))
+                    .font(StudioTypography.footnote)
+                    .foregroundStyle(StudioTheme.muted)
+            }
+        }
+        .tint(StudioTheme.teal)
+    }
+
+    private func setupOptionButton(
+        title: String,
+        accessibilityLabel: String,
+        isSelected: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(title, action: action)
+            .font(StudioTypography.label)
+            .foregroundStyle(isSelected ? Color.white : StudioTheme.ink)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 11)
+            .background(
+                isSelected ? StudioTheme.teal : Color.white.opacity(0.72),
+                in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+            )
+            .buttonStyle(.plain)
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private var selectedDifficultyLevels: Set<AliasVocabulary.DifficultyLevel> {
+        var levels: Set<AliasVocabulary.DifficultyLevel> = []
+        if includesEasyWords { levels.insert(.easy) }
+        if includesMediumWords { levels.insert(.medium) }
+        if includesHardWords { levels.insert(.hard) }
+        if includesExpertWords { levels.insert(.expert) }
+        return levels
+    }
+
+    private func toggleDifficulty(_ level: AliasVocabulary.DifficultyLevel) {
+        switch level {
+        case .easy: includesEasyWords.toggle()
+        case .medium: includesMediumWords.toggle()
+        case .hard: includesHardWords.toggle()
+        case .expert: includesExpertWords.toggle()
+        }
+    }
+
+    private func difficultyName(_ level: AliasVocabulary.DifficultyLevel) -> String {
+        switch level {
+        case .easy: return copy("alias.preview.level.easy", fallback: "Easy")
+        case .medium: return copy("alias.preview.level.medium", fallback: "Medium")
+        case .hard: return copy("alias.preview.level.hard", fallback: "Hard")
+        case .expert: return copy("alias.preview.level.expert", fallback: "Expert")
+        }
+    }
+
     private func newMatchTapped() {
         if aliasGameState.canResume {
             showsNewMatchConfirmation = true
@@ -111,7 +234,12 @@ struct AliasHomeScreen: View {
     }
 
     private func startMatch() {
-        aliasGameState.startMatch(targetScore: targetScore, includeAdjectives: includeAdjectives)
+        aliasGameState.startMatch(
+            targetScore: targetScore,
+            turnDuration: turnDuration,
+            difficultyLevels: selectedDifficultyLevels,
+            includeAdjectives: includeAdjectives
+        )
         gameState.showAliasGame()
     }
 

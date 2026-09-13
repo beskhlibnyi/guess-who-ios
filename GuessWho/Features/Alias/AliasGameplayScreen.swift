@@ -6,6 +6,10 @@ struct AliasGameplayScreen: View {
     @EnvironmentObject private var aliasGameState: AliasGameState
     @AppStorage(guessWhoPlayerOneNameKey) private var storedPlayerOneName = ""
     @AppStorage(guessWhoPlayerTwoNameKey) private var storedPlayerTwoName = ""
+    @State private var explanationWord: AliasVocabulary.Word?
+    @State private var wordDragOffset: CGFloat = 0
+    @State private var isCompletingSwipe = false
+    @State private var showsExclusionError = false
 
     private let timer = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
 
@@ -32,6 +36,25 @@ struct AliasGameplayScreen: View {
         }
         .onReceive(timer) { date in
             aliasGameState.tick(now: date)
+        }
+        .onChange(of: aliasGameState.currentWord?.id) { _, _ in
+            var transaction = Transaction(animation: nil)
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                wordDragOffset = 0
+                isCompletingSwipe = false
+            }
+        }
+        .sheet(item: $explanationWord) { word in
+            AliasWordExplanationSheet(word: word.text)
+        }
+        .alert(
+            copy("alias.game.exclude.error.title", fallback: "Couldn’t exclude word"),
+            isPresented: $showsExclusionError
+        ) {
+            Button(copy("common.ok", fallback: "OK"), role: .cancel) {}
+        } message: {
+            Text(copy("alias.game.exclude.error.message", fallback: "The word remains in the deck. Please try again."))
         }
     }
 
@@ -77,7 +100,7 @@ struct AliasGameplayScreen: View {
                     Image(systemName: "timer")
                         .font(.system(size: 36, weight: .bold))
                         .foregroundStyle(StudioTheme.teal)
-                    Text(copy("alias.game.ready.title", fallback: "60 seconds"))
+                    Text(copy("alias.game.ready.title", fallback: "%d seconds", Int(aliasGameState.configuration.turnDuration)))
                         .font(StudioTypography.titleLarge)
                         .foregroundStyle(StudioTheme.ink)
                     Text(copy("alias.game.ready.message", fallback: "Describe each word without saying it. Tap Correct or Skip, then continue immediately."))
@@ -115,6 +138,48 @@ struct AliasGameplayScreen: View {
 
             scoreBoard
 
+            swipeableWordCard
+
+            HStack(spacing: 12) {
+                Button(copy("alias.game.skip", fallback: "Skip −1")) {
+                    aliasGameState.skipWord()
+                }
+                    .buttonStyle(ActionButtonStyle(kind: .outlined(StudioTheme.coral)))
+                Button(copy("alias.game.correct", fallback: "Correct +1")) {
+                    aliasGameState.markCorrect()
+                }
+                    .buttonStyle(ActionButtonStyle(kind: .filled(StudioTheme.teal)))
+            }
+
+            HStack(spacing: 12) {
+                Button {
+                    explanationWord = aliasGameState.currentWord
+                } label: {
+                    Label(copy("alias.explanation.action", fallback: "Explain word"), systemImage: "book.closed")
+                }
+                .buttonStyle(ActionButtonStyle(kind: .outlined(StudioTheme.teal)))
+                .disabled(aliasGameState.currentWord == nil)
+
+                Button {
+                    if !aliasGameState.excludeCurrentWord(),
+                       case .playing = aliasGameState.phase {
+                        showsExclusionError = true
+                    }
+                } label: {
+                    Label(copy("alias.game.exclude", fallback: "Exclude word"), systemImage: "rectangle.badge.minus")
+                }
+                .buttonStyle(ActionButtonStyle(kind: .outlined(StudioTheme.coral)))
+                .disabled(aliasGameState.currentWord == nil)
+            }
+        }
+    }
+
+    private var swipeableWordCard: some View {
+        VStack(spacing: 10) {
+            Label(copy("alias.game.swipe.correct", fallback: "Swipe up · guessed +1"), systemImage: "arrow.up.circle.fill")
+                .font(StudioTypography.compactLabel)
+                .foregroundStyle(StudioTheme.teal)
+
             card {
                 VStack(spacing: 14) {
                     Text(aliasGameState.currentWord?.text ?? "—")
@@ -130,16 +195,64 @@ struct AliasGameplayScreen: View {
                         .foregroundStyle(aliasGameState.turnScore < 0 ? StudioTheme.coral : StudioTheme.teal)
                 }
             }
+            .offset(y: wordDragOffset)
+            .rotationEffect(.degrees(Double(wordDragOffset / 42)))
+            .highPriorityGesture(wordSwipeGesture)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityHint(copy("alias.game.swipe.hint", fallback: "Swipe up if guessed or down to skip."))
+            .accessibilityAction(named: Text(copy("alias.game.correct", fallback: "Correct +1"))) {
+                aliasGameState.markCorrect()
+            }
+            .accessibilityAction(named: Text(copy("alias.game.skip", fallback: "Skip −1"))) {
+                aliasGameState.skipWord()
+            }
 
-            HStack(spacing: 12) {
-                Button(copy("alias.game.skip", fallback: "Skip −1")) {
-                    aliasGameState.skipWord()
+            Label(copy("alias.game.swipe.skip", fallback: "Swipe down · skipped −1"), systemImage: "arrow.down.circle.fill")
+                .font(StudioTypography.compactLabel)
+                .foregroundStyle(StudioTheme.coral)
+        }
+    }
+
+    private var wordSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 8)
+            .onChanged { value in
+                guard !isCompletingSwipe,
+                      abs(value.translation.height) > abs(value.translation.width) else { return }
+                var transaction = Transaction(animation: nil)
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    wordDragOffset = value.translation.height
                 }
-                    .buttonStyle(ActionButtonStyle(kind: .outlined(StudioTheme.coral)))
-                Button(copy("alias.game.correct", fallback: "Correct +1")) {
-                    aliasGameState.markCorrect()
+            }
+            .onEnded { value in
+                guard !isCompletingSwipe else { return }
+                let translation = value.translation.height
+                let isVertical = abs(translation) > abs(value.translation.width)
+
+                if isVertical, translation <= -64 {
+                    completeSwipe(isCorrect: true)
+                } else if isVertical, translation >= 64 {
+                    completeSwipe(isCorrect: false)
+                } else {
+                    withAnimation(.snappy) {
+                        wordDragOffset = 0
+                    }
                 }
-                    .buttonStyle(ActionButtonStyle(kind: .filled(StudioTheme.teal)))
+            }
+    }
+
+    private func completeSwipe(isCorrect: Bool) {
+        guard aliasGameState.currentWord != nil else { return }
+        isCompletingSwipe = true
+        withAnimation(.easeOut(duration: 0.14)) {
+            wordDragOffset = isCorrect ? -520 : 520
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.14) {
+            if isCorrect {
+                aliasGameState.markCorrect()
+            } else {
+                aliasGameState.skipWord()
             }
         }
     }
@@ -181,6 +294,8 @@ struct AliasGameplayScreen: View {
             Button(copy("alias.game.over.rematch", fallback: "Rematch")) {
                 aliasGameState.startMatch(
                     targetScore: aliasGameState.configuration.targetScore,
+                    turnDuration: Int(aliasGameState.configuration.turnDuration),
+                    difficultyLevels: aliasGameState.configuration.difficultyLevels,
                     includeAdjectives: aliasGameState.configuration.includeAdjectives
                 )
             }

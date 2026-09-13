@@ -6,10 +6,19 @@ final class AliasGameState: ObservableObject {
     static let targetScoreKey = "aliasTargetScore"
     static let targetScoreOptions = [10, 20, 30, 50]
     static let defaultTargetScore = 30
+    static let turnDurationKey = "aliasTurnDuration"
+    static let turnDurationOptions = [30, 45, 60, 90]
+    static let defaultTurnDuration = 60
+    static let easyWordsKey = "aliasIncludeEasyWords"
+    static let mediumWordsKey = "aliasIncludeMediumWords"
+    static let hardWordsKey = "aliasIncludeHardWords"
+    static let expertWordsKey = "aliasIncludeExpertWords"
+    static let defaultDifficultyLevels: Set<AliasVocabulary.DifficultyLevel> = [.easy, .medium, .hard]
 
     struct Configuration: Equatable {
         let targetScore: Int
         let turnDuration: TimeInterval
+        let difficultyLevels: Set<AliasVocabulary.DifficultyLevel>
         let includeAdjectives: Bool
     }
 
@@ -27,12 +36,13 @@ final class AliasGameState: ObservableObject {
     @Published private(set) var phase: Phase = .idle
     @Published private(set) var configuration = Configuration(
         targetScore: defaultTargetScore,
-        turnDuration: 60,
+        turnDuration: TimeInterval(defaultTurnDuration),
+        difficultyLevels: defaultDifficultyLevels,
         includeAdjectives: true
     )
     @Published private(set) var scoresByPlayer: [GameState.Player: Int] = [.one: 0, .two: 0]
     @Published private(set) var currentWord: AliasVocabulary.Word?
-    @Published private(set) var secondsRemaining = 60
+    @Published private(set) var secondsRemaining = defaultTurnDuration
     @Published private(set) var turnScore = 0
     @Published private(set) var correctCount = 0
     @Published private(set) var skippedCount = 0
@@ -66,14 +76,26 @@ final class AliasGameState: ObservableObject {
         scoresByPlayer[player, default: 0]
     }
 
-    func startMatch(targetScore: Int, includeAdjectives: Bool) {
+    func startMatch(
+        targetScore: Int,
+        turnDuration: Int,
+        difficultyLevels: Set<AliasVocabulary.DifficultyLevel>,
+        includeAdjectives: Bool
+    ) {
         let validatedTarget = Self.targetScoreOptions.contains(targetScore)
             ? targetScore
             : Self.defaultTargetScore
+        let validatedDuration = Self.turnDurationOptions.contains(turnDuration)
+            ? turnDuration
+            : Self.defaultTurnDuration
+        let validatedLevels = difficultyLevels.isEmpty
+            ? Self.defaultDifficultyLevels
+            : difficultyLevels
 
         configuration = Configuration(
             targetScore: validatedTarget,
-            turnDuration: 60,
+            turnDuration: TimeInterval(validatedDuration),
+            difficultyLevels: validatedLevels,
             includeAdjectives: includeAdjectives
         )
         scoresByPlayer = [.one: 0, .two: 0]
@@ -103,6 +125,7 @@ final class AliasGameState: ObservableObject {
                     page: 0,
                     pageSize: pageSize,
                     shuffleSeed: seed,
+                    difficultyLevels: validatedLevels,
                     includeAdjectives: includeAdjectives
                 )
             }.value
@@ -160,6 +183,22 @@ final class AliasGameState: ObservableObject {
         turnScore -= 1
         skippedCount += 1
         advanceOrFinish(for: player)
+    }
+
+    @discardableResult
+    func excludeCurrentWord(now: Date = Date()) -> Bool {
+        guard case .playing(let player) = phase,
+              let currentWord else { return false }
+        guard isBeforeDeadline(now) else {
+            finishTurn(for: player)
+            return false
+        }
+        guard AliasVocabulary.reviewWord(id: currentWord.id, decision: .discarded) else {
+            return false
+        }
+
+        advanceOrFinish(for: player)
+        return true
     }
 
     func tick(now: Date = Date()) {
