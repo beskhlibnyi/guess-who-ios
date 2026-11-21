@@ -12,7 +12,6 @@
 "settings.player.placeholder" = "Введіть ім'я";
 "app.title" = "ЯЛІАС";
 "alias.vocabulary_review.title" = "Перевірити слова";
-"alias.menu.tagline" = "Передай. Поясни. Вгадай.";
 "alias.menu.review" = "Перевірити";
 "alias.menu.goal" = "Мета";
 "alias.menu.goal.option" = "%d очок";
@@ -29,11 +28,12 @@
 "alias.game.loading.title" = "Перемішуємо слова";
 "alias.game.loading.message" = "Готуємо офлайн-колоду…";
 "alias.game.handoff.title" = "Передайте телефон %@";
-"alias.game.handoff.message" = "Наступне слово має бачити лише той, хто пояснює.";
-"alias.game.handoff.cta" = "Я — %@";
-"alias.game.ready.title" = "%d секунд";
-"alias.game.ready.message" = "Пояснюйте слово, не називаючи його. Проведіть угору, якщо слово вгадано, або вниз, щоб пропустити.";
-"alias.game.ready.cta" = "Почати хід";
+"alias.game.handoff.message" = "Наступне слово має бачити лише %@.";
+"alias.game.handoff.cta" = "Я — %@, почати";
+"alias.game.handoff.rules.title" = "%@, пояснюйте слово, дотримуючись правил:";
+"alias.game.handoff.rules.no_word" = "Не називайте саме слово.";
+"alias.game.handoff.rules.guessed" = "Проведіть угору, якщо слово вгадано.";
+"alias.game.handoff.rules.skipped" = "Проведіть униз, щоб пропустити.";
 "alias.game.timer.accessibility" = "Залишилося секунд: %d";
 "alias.game.skip" = "Пропустити −1";
 "alias.game.correct" = "Вгадано +1";
@@ -45,8 +45,6 @@
 "alias.menu.mode" = "Режим гри";
 "alias.menu.mode.classic" = "Класичний";
 "alias.menu.mode.fastest" = "На швидкість";
-"alias.game.ready.fastest.title" = "Наберіть %d очок";
-"alias.game.ready.fastest.message" = "Секундомір працює, доки ви не досягнете мети. Проведіть угору, якщо слово вгадано, або вниз, щоб пропустити.";
 "alias.game.timer.elapsed.accessibility" = "Минуло секунд: %d";
 "alias.game.pause" = "Пауза";
 "alias.game.paused" = "Пауза";

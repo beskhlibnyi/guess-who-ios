@@ -47,7 +47,6 @@ final class AliasGameState: ObservableObject {
         case idle
         case loading
         case handoff(to: AliasPlayer)
-        case ready(AliasPlayer)
         case playing(AliasPlayer)
         case turnResult(AliasPlayer)
         case matchOver(winner: AliasPlayer)
@@ -110,7 +109,7 @@ final class AliasGameState: ObservableObject {
         switch phase {
         case .idle, .matchOver, .deckUnavailable:
             return false
-        case .loading, .handoff, .ready, .playing, .turnResult:
+        case .loading, .handoff, .playing, .turnResult:
             return true
         }
     }
@@ -211,13 +210,8 @@ final class AliasGameState: ObservableObject {
         }
     }
 
-    func acknowledgeHandoff() {
-        guard case .handoff(let player) = phase else { return }
-        phase = .ready(player)
-    }
-
     func startTurn(now: Date = Date()) {
-        guard case .ready(let player) = phase else { return }
+        guard case .handoff(let player) = phase else { return }
         turnWords = []
         secondsRemaining = Int(configuration.turnDuration)
         elapsedTime = 0

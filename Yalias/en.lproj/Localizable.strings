@@ -12,7 +12,6 @@
 "settings.player.placeholder" = "Enter a name";
 "app.title" = "YALIAS";
 "alias.vocabulary_review.title" = "Review words";
-"alias.menu.tagline" = "Pass. Explain. Guess.";
 "alias.menu.review" = "Review";
 "alias.menu.goal" = "Goal";
 "alias.menu.goal.option" = "%d points";
@@ -29,11 +28,12 @@
 "alias.game.loading.title" = "Shuffling words";
 "alias.game.loading.message" = "Preparing the offline deck…";
 "alias.game.handoff.title" = "Pass the phone to %@";
-"alias.game.handoff.message" = "Only the explainer should see the next word.";
-"alias.game.handoff.cta" = "I am %@";
-"alias.game.ready.title" = "%d seconds";
-"alias.game.ready.message" = "Describe each word without saying it. Swipe up when guessed or down to skip.";
-"alias.game.ready.cta" = "Start Turn";
+"alias.game.handoff.message" = "Only %@ should see the next word.";
+"alias.game.handoff.cta" = "I’m %@, start";
+"alias.game.handoff.rules.title" = "%@, explain the word and follow these rules:";
+"alias.game.handoff.rules.no_word" = "Do not say the word itself.";
+"alias.game.handoff.rules.guessed" = "Swipe up when the word is guessed.";
+"alias.game.handoff.rules.skipped" = "Swipe down to skip it.";
 "alias.game.timer.accessibility" = "%d seconds remaining";
 "alias.game.skip" = "Skip −1";
 "alias.game.correct" = "Correct +1";
@@ -45,8 +45,6 @@
 "alias.menu.mode" = "Game mode";
 "alias.menu.mode.classic" = "Classic";
 "alias.menu.mode.fastest" = "Fastest";
-"alias.game.ready.fastest.title" = "Reach %d points";
-"alias.game.ready.fastest.message" = "The stopwatch runs until you reach the goal. Swipe up when guessed or down to skip.";
 "alias.game.timer.elapsed.accessibility" = "%d seconds elapsed";
 "alias.game.pause" = "Pause";
 "alias.game.paused" = "Paused";

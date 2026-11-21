@@ -24,12 +24,15 @@ struct AliasHomeScreen: View {
 
             VStack(spacing: 12) {
                 header
+                Color.clear.frame(height: 32)
                 settings
-                actions
+                primaryControls
+                Spacer(minLength: 0)
+                bottomControls
             }
             .padding(.horizontal, 20)
             .padding(.top, 6)
-            .padding(.bottom, 12)
+            .padding(.bottom, 4)
 
             AliasSettingsDrawer(
                 languageOverride: $languageOverride,
@@ -74,39 +77,9 @@ struct AliasHomeScreen: View {
                     .rotationEffect(.degrees(-2))
                     .offset(y: -7)
 
-                Text(copy("alias.menu.tagline", fallback: "Pass. Explain. Guess."))
-                    .font(StudioTypography.paperControl)
-                    .foregroundStyle(StudioTheme.paperInk)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 22)
-                    .frame(minHeight: 48)
-                    .background(TornPaperShape().fill(StudioTheme.paper))
-                    .overlay(alignment: .bottom) {
-                        Capsule()
-                            .fill(StudioTheme.vermilion)
-                            .frame(width: 176, height: 5)
-                            .rotationEffect(.degrees(-2))
-                            .offset(y: -8)
-                    }
-                    .shadow(color: StudioTheme.paperInk.opacity(0.12), radius: 5, x: 1, y: 4)
             }
             .frame(maxWidth: .infinity)
 
-            Button {
-                withAnimation(.easeInOut(duration: 0.35)) {
-                    showsSettings = true
-                }
-            } label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(StudioTheme.paperInk)
-                    .frame(width: 46, height: 46)
-                    .background(StudioTheme.paper, in: Circle())
-                    .overlay { Circle().stroke(StudioTheme.paperInk.opacity(0.12)) }
-                    .shadow(color: StudioTheme.paperInk.opacity(0.16), radius: 5, x: 1, y: 4)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(copy("settings.open", fallback: "Open settings"))
         }
     }
 
@@ -208,27 +181,50 @@ struct AliasHomeScreen: View {
     }
 
     private var adjectivesPicker: some View {
-        Toggle(isOn: $includeAdjectives) {
-            Text(copy("alias.filter.adjectives", fallback: "Include adjectives"))
-                .font(StudioTypography.subheadline.weight(.semibold))
-                .foregroundStyle(StudioTheme.paperInk)
-                .lineLimit(2)
+        Button {
+            includeAdjectives.toggle()
+        } label: {
+            HStack(spacing: 16) {
+                Text(copy("alias.filter.adjectives", fallback: "Include adjectives"))
+                    .font(StudioTypography.subheadline.weight(.semibold))
+                    .foregroundStyle(StudioTheme.paperInk)
+                    .lineLimit(2)
+
+                Spacer()
+
+                ZStack {
+                    Circle()
+                        .fill(includeAdjectives ? StudioTheme.olive : StudioTheme.paper)
+                    Circle()
+                        .stroke(StudioTheme.paperInk, lineWidth: 2.2)
+
+                    if includeAdjectives {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 17, weight: .black))
+                            .foregroundStyle(StudioTheme.paperHighlight)
+                    }
+                }
+                .frame(width: 36, height: 36)
+                .rotationEffect(.degrees(includeAdjectives ? -3 : 2))
+            }
+            .padding(.horizontal, 16)
+            .frame(minHeight: 56)
+            .background(StudioTheme.paperHighlight.opacity(0.74), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .overlay(alignment: .bottomLeading) {
+                Capsule()
+                    .fill(StudioTheme.vermilion)
+                    .frame(width: 112, height: 4)
+                    .rotationEffect(.degrees(-2))
+                    .offset(x: 18, y: -8)
+            }
+            .shadow(color: StudioTheme.paperInk.opacity(0.08), radius: 4, x: 1, y: 3)
         }
-        .tint(StudioTheme.olive)
-        .padding(.horizontal, 16)
-        .frame(minHeight: 56)
-        .background(StudioTheme.paperHighlight.opacity(0.74), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .overlay(alignment: .bottomLeading) {
-            Capsule()
-                .fill(StudioTheme.vermilion)
-                .frame(width: 112, height: 4)
-                .rotationEffect(.degrees(-2))
-                .offset(x: 18, y: -8)
-        }
-        .shadow(color: StudioTheme.paperInk.opacity(0.08), radius: 4, x: 1, y: 3)
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(includeAdjectives ? .isSelected : [])
+        .sensoryFeedback(.selection, trigger: includeAdjectives)
     }
 
-    private var actions: some View {
+    private var primaryControls: some View {
         VStack(spacing: 10) {
             Button(action: primaryAction) {
                 Text(
@@ -243,11 +239,6 @@ struct AliasHomeScreen: View {
                 )
             )
 
-            Button(action: navigationState.showReview) {
-                Text(copy("alias.vocabulary_review.title", fallback: "Review words"))
-            }
-            .buttonStyle(PaperActionButtonStyle(kind: .outlined))
-
             if aliasGameState.canResume {
                 Button(action: newMatchTapped) {
                     Label(copy("alias.menu.new_match", fallback: "New Match"), systemImage: "arrow.counterclockwise")
@@ -257,7 +248,46 @@ struct AliasHomeScreen: View {
                 }
                 .buttonStyle(.plain)
             }
+
         }
+    }
+
+    private var bottomControls: some View {
+        HStack(spacing: 18) {
+            bottomIconButton(
+                title: copy("alias.vocabulary_review.title", fallback: "Review words"),
+                systemImage: "book.closed.fill",
+                action: navigationState.showReview
+            )
+
+            bottomIconButton(
+                title: copy("settings.open", fallback: "Open settings"),
+                systemImage: "gearshape.fill"
+            ) {
+                withAnimation(.easeInOut(duration: 0.35)) {
+                    showsSettings = true
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func bottomIconButton(
+        title: String,
+        systemImage: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 21, weight: .bold))
+                .foregroundStyle(StudioTheme.paperInk)
+                .frame(width: 48, height: 48)
+                .background(StudioTheme.paper, in: Circle())
+                .overlay { Circle().stroke(StudioTheme.paperInk.opacity(0.18), lineWidth: 1.5) }
+                .shadow(color: StudioTheme.paperInk.opacity(0.14), radius: 4, x: 1, y: 3)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(title)
     }
 
     private var selectedDifficultyLevels: Set<AliasVocabulary.DifficultyLevel> {

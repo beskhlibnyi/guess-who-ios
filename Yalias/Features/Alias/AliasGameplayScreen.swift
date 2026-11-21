@@ -22,8 +22,6 @@ struct AliasGameplayScreen: View {
                 loadingState
             case .handoff(let player):
                 handoffState(player)
-            case .ready(let player):
-                readyState(player)
             case .playing(let player):
                 playingState(player)
             case .turnResult(let player):
@@ -79,32 +77,127 @@ struct AliasGameplayScreen: View {
     }
 
     private func handoffState(_ player: AliasPlayer) -> some View {
-        messageScreen(
-            icon: "hand.raised.fill",
-            title: copy("alias.game.handoff.title", fallback: "Pass the phone to %@", playerName(player)),
-            message: copy("alias.game.handoff.message", fallback: "Only the explainer should see the next word.")
-        ) {
-            Button(copy("alias.game.handoff.cta", fallback: "I am %@", playerName(player))) {
-                aliasGameState.acknowledgeHandoff()
+        ZStack {
+            YaliasPaperBackgroundView()
+
+            VStack(spacing: 14) {
+                Color.clear.frame(height: 76)
+
+                Image(systemName: "hand.raised.fill")
+                    .font(.system(size: 32, weight: .black))
+                    .foregroundStyle(StudioTheme.paperInk)
+                    .frame(width: 92, height: 66)
+                    .background(TornPaperShape().fill(StudioTheme.mustard))
+                    .overlay(alignment: .bottomTrailing) {
+                        Circle()
+                            .fill(StudioTheme.vermilion)
+                            .frame(width: 22, height: 22)
+                            .offset(x: 2, y: 1)
+                    }
+                    .rotationEffect(.degrees(-2))
+                    .shadow(color: StudioTheme.paperInk.opacity(0.15), radius: 5, x: 1, y: 4)
+
+                VStack(spacing: 12) {
+                    Text(copy("alias.game.handoff.title", fallback: "Pass the phone to %@", playerName(player)))
+                        .font(StudioTypography.paperTitle)
+                        .foregroundStyle(StudioTheme.paperInk)
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.78)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Capsule()
+                        .fill(StudioTheme.vermilion)
+                        .frame(width: 152, height: 5)
+                        .rotationEffect(.degrees(-2))
+
+                    Text(copy("alias.game.handoff.message", fallback: "Only %@ should see the next word.", playerName(player)))
+                        .font(StudioTypography.footnote.weight(.semibold))
+                        .foregroundStyle(StudioTheme.paperInk)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.horizontal, 22)
+                .padding(.vertical, 18)
+                .frame(maxWidth: .infinity)
+                .background(TornPaperShape().fill(StudioTheme.paper))
+                .shadow(color: StudioTheme.paperInk.opacity(0.12), radius: 6, x: 1, y: 4)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(copy(
+                        "alias.game.handoff.rules.title",
+                        fallback: "%@, explain the word and follow these rules:",
+                        playerName(player)
+                    ))
+                        .font(StudioTypography.subheadline.weight(.semibold))
+                        .foregroundStyle(StudioTheme.paperInk)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    ruleRow(
+                        systemImage: "xmark",
+                        color: StudioTheme.vermilion,
+                        title: copy("alias.game.handoff.rules.no_word", fallback: "Do not say the word itself.")
+                    )
+                    ruleRow(
+                        systemImage: "arrow.up",
+                        color: StudioTheme.olive,
+                        title: copy("alias.game.handoff.rules.guessed", fallback: "Swipe up when the word is guessed.")
+                    )
+                    ruleRow(
+                        systemImage: "arrow.down",
+                        color: StudioTheme.mustard,
+                        title: copy("alias.game.handoff.rules.skipped", fallback: "Swipe down to skip it.")
+                    )
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+                .frame(maxWidth: .infinity)
+                .background(TornPaperShape().fill(StudioTheme.paperHighlight))
+                .overlay {
+                    TornPaperShape()
+                        .stroke(StudioTheme.paperInk.opacity(0.16), lineWidth: 1.2)
+                }
+                .shadow(color: StudioTheme.paperInk.opacity(0.10), radius: 5, x: 1, y: 4)
+
+                Button(copy("alias.game.handoff.cta", fallback: "I’m %@, start", playerName(player))) {
+                    aliasGameState.startTurn()
+                }
+                .buttonStyle(PaperActionButtonStyle(kind: .filled(StudioTheme.vermilion)))
+
+                Spacer(minLength: 12)
             }
-            .buttonStyle(ActionButtonStyle(kind: .filled(StudioTheme.coral)))
+            .padding(.horizontal, 24)
+            .padding(.vertical, 12)
+
+            Button(action: returnToMenu) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 19, weight: .black))
+                    .foregroundStyle(StudioTheme.paperInk)
+                    .frame(width: 44, height: 44)
+                    .background(StudioTheme.paper, in: Circle())
+                    .overlay { Circle().stroke(StudioTheme.paperInk, lineWidth: 1.8) }
+                    .shadow(color: StudioTheme.paperInk.opacity(0.13), radius: 5, x: 1, y: 3)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(copy("common.menu", fallback: "Menu"))
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.leading, 20)
+            .padding(.top, 12)
         }
     }
 
-    private func readyState(_ player: AliasPlayer) -> some View {
-        contentScreen {
-            header(title: playerName(player), subtitle: readyTitle)
-            Text(readyMessage)
-                .font(StudioTypography.body)
-                .foregroundStyle(StudioTheme.muted)
-                .multilineTextAlignment(.center)
+    private func ruleRow(systemImage: String, color: Color, title: String) -> some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.system(size: 13, weight: .black))
+                .foregroundStyle(StudioTheme.paperInk)
+                .frame(width: 34, height: 28)
+                .background(TornPaperShape().fill(color.opacity(0.72)))
+                .rotationEffect(.degrees(systemImage == "arrow.up" ? -2 : 2))
+
+            Text(title)
+                .font(StudioTypography.footnote.weight(.medium))
+                .foregroundStyle(StudioTheme.paperInk)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.vertical, 20)
-            Button(copy("alias.game.ready.cta", fallback: "Start Turn")) {
-                aliasGameState.startTurn()
-            }
-            .buttonStyle(ActionButtonStyle(kind: .filled(StudioTheme.coral)))
-            menuButton
         }
     }
 
@@ -669,38 +762,6 @@ struct AliasGameplayScreen: View {
                 "alias.game.timer.elapsed.accessibility",
                 fallback: "%d seconds elapsed",
                 Int(aliasGameState.elapsedTime)
-            )
-        }
-    }
-
-    private var readyTitle: String {
-        switch aliasGameState.configuration.mode {
-        case .classic:
-            return copy(
-                "alias.game.ready.title",
-                fallback: "%d seconds",
-                Int(aliasGameState.configuration.turnDuration)
-            )
-        case .fastest:
-            return copy(
-                "alias.game.ready.fastest.title",
-                fallback: "Reach %d points",
-                aliasGameState.configuration.targetScore
-            )
-        }
-    }
-
-    private var readyMessage: String {
-        switch aliasGameState.configuration.mode {
-        case .classic:
-            return copy(
-                "alias.game.ready.message",
-                fallback: "Describe each word without saying it. Swipe up when guessed or down to skip."
-            )
-        case .fastest:
-            return copy(
-                "alias.game.ready.fastest.message",
-                fallback: "The stopwatch runs until you reach the goal. Swipe up when guessed or down to skip."
             )
         }
     }
