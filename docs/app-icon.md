@@ -2,7 +2,7 @@
 
 The icon represents the growing collection of social games, using the shared cream, teal, coral, and gold palette.
 
-Generated with the built-in image generation tool. The result was resized to an opaque 1024 × 1024 PNG and added to `GuessWho/Assets.xcassets/AppIcon.appiconset/AppIcon.png`.
+Generated with the built-in image generation tool. The result was resized to an opaque 1024 × 1024 PNG and added to `Yalias/Assets.xcassets/AppIcon.appiconset/AppIcon.png`.
 
 ## Generation prompt
 

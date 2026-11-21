@@ -1,63 +1,28 @@
 # Project Guidelines
 
-## Project Snapshot
+## Project snapshot
 
-- App: `GuessWho` is an offline, pass-and-play iPhone game built with SwiftUI for iOS 17+.
-- Current product shape: `guessWho` is the complete playable game. `alias` is selectable and opens a read-only, paginated vocabulary preview while its custom rules and gameplay flow are still being designed.
-- Entry point: `GuessWho/GuessWhoApp.swift` creates a single shared `GameState` as an `@StateObject`.
-- App routing: `GuessWho/ContentView.swift` forwards into `GuessWhoExperienceView`, which switches between the catalog, home, rules, and gameplay screens from `gameState.appScreen`.
-- Main state owner: `GuessWho/Features/GuessWho/Models/GameState.swift` is the source of truth for navigation, selected game, turn flow, secrets, eliminated cards, and question notes.
-- Gameplay UI: `GuessWho/Features/GuessWho/GuessWhoGameplayFlowView.swift` contains the main round experience and also defines the shared visual system used across the app (`StudioTheme`, `StudioTypography`, button styling, card surfaces).
-- Home/setup UI: `GuessWho/Features/GuessWho/GuessWhoHomeScreen.swift` owns the menu, player naming flow, resume/new game actions, and rules entry.
-- Catalog UI: `GuessWho/Features/GameCatalog/GamePickerScreen.swift` owns game selection. Alias selection routes to its dedicated preview rather than the Guess Who home flow.
-- Alias vocabulary: `GuessWho/Features/Alias/Resources/alias_uk_words.sqlite` is the bundled, offline source of truth. `AliasVocabulary.swift` reads a single page directly from SQLite rather than loading the full deck into memory.
-- Game data: `GuessWho/Features/GuessWho/Models/Character.swift` contains the starter roster and character presentation helpers; `PortraitImageRepository.swift` handles portrait image loading.
-- Localization: `GuessWho/Localization.swift` centralizes string lookup and language selection. The app currently supports English (`en`) and Ukrainian (`uk`).
-- Persisted user settings: language override and both player names are stored with `@AppStorage` keys defined in `Localization.swift`.
-- When starting a task, prefer this snapshot plus targeted file reads over rescanning the whole repo. Re-scan broadly only if the task suggests architecture changed.
+- YALIAS is an offline, pass-and-play SwiftUI game for iOS 17+.
+- `Yalias/ContentView.swift` owns Alias-only navigation between menu, word review, and gameplay.
+- `AliasGameState` owns both classic and fastest-mode match state.
+- `AliasVocabulary.swift` reads the bundled Ukrainian deck from `alias_uk_words.sqlite`.
+- `Localization.swift` supports English and Ukrainian UI while playable words remain Ukrainian.
+- Player names, language, match setup, and vocabulary filters use `@AppStorage`.
 
-## Working Map
+## Engineering practices
 
-- Xcode project and shared scheme: `GuessWho.xcodeproj`, scheme `GuessWho`; bundle identifier is `com.beskhlibnyi.guesswho`. There is currently no XCTest target or automated test suite.
-- Build command: `xcodebuild -project GuessWho.xcodeproj -scheme GuessWho -sdk iphonesimulator -configuration Debug build`. Use a locally available simulator destination when a destination-specific build is needed.
-- Navigation is state-driven, not `NavigationLink`-driven. Add or change top-level screens through `GameState.AppScreen`, its navigation methods, and the switch in `GuessWhoExperienceView`.
-- Round lifecycle: `idle` -> secret selection for each player -> handoff -> turn action -> question/answer/elimination or guess -> handoff or game over. Keep transition validation inside `GameState`; views should call its intent methods rather than mutate round state.
-- Each player has an independent eliminated-character set, question-note list, and question draft. A character is only eliminated for the active player, so do not replace these per-player collections with a shared board without intentionally changing game rules.
-- `GameState` is `@MainActor` and exposes most mutable state as `private(set)`. New gameplay behavior generally belongs in an intent method there, then gets rendered from the published state.
-- To add a playable catalog game, extend `GameState.Game` with availability and character data, add its catalog/localization presentation, and add a dedicated experience route. Alias currently has only `.aliasPreview`; do not route it through Guess Who setup or gameplay until its rules are defined.
-- Portrait files live at `GuessWho/Features/GuessWho/Resources/CharacterPortraits/<CharacterName>.png`; character image references must continue to match those filenames. Portraits are bundled as ordinary project resources, not asset-catalog images.
-- Localization source of truth is `GuessWhoLocalizationCatalog` in `Localization.swift`; translations live in `GuessWho/en.lproj/Localizable.strings` and `GuessWho/uk.lproj/Localizable.strings`. When adding a UI string, add the catalog entry and both translations, then use the catalog lookup rather than a raw user-facing literal.
-- The active language is selected by a persisted override, otherwise device preferences. `GuessWhoExperienceView` is keyed by the resolved language so language changes rebuild the visible UI.
-- Visual consistency: reuse `StudioTheme`, `StudioTypography`, and existing studio button/card styles from `GuessWhoGameplayFlowView.swift`. They are intentionally shared despite being declared in the gameplay file.
-- Useful targeted reads by task: state/rules -> `Models/GameState.swift`; turn and board UI -> `GuessWhoGameplayFlowView.swift`; setup/menu -> `GuessWhoHomeScreen.swift`; catalog -> `GamePickerScreen.swift`; strings/language -> `Localization.swift`; portraits/roster -> `Character.swift` and `PortraitImageRepository.swift`.
+- Preserve both game modes and offline gameplay.
+- Keep game transitions inside `AliasGameState`; views render state and send intents.
+- Keep feature code in `Features/Alias` and feature-agnostic UI in `Shared/UI`.
+- Register every user-facing string in `AliasLocalizationCatalog` and translate it in both `en.lproj` and `uk.lproj`.
+- Reuse `StudioTheme`, `StudioTypography`, and `ActionButtonStyle` for visual consistency.
+- Do not add accounts, analytics, or gameplay network dependencies.
+- Preserve unrelated user changes in a dirty worktree.
+- Before handoff, run the simulator build, search for stale references, and run `git diff --check`.
 
-## Alias Vocabulary
+## Alias vocabulary
 
-- The Alias UI can be localized in English and Ukrainian, but every card word is Ukrainian regardless of the active UI language.
-- `alias_uk_words.sqlite` contains a `words` table with `word`, `part_of_speech`, `source`, `frequency`, `difficulty`, proper-name/phrase/abbreviation flags, and `enabled`. It contains 249,499 normalized unique candidates and 139,677 default-enabled noun and adjective cards. Verbs are never playable; adjectives can be included or excluded with the persisted Alias vocabulary setting.
-- The default pool excludes structural non-game cards: proper names, phrases, abbreviations, and unsupported parts of speech. It does not remove rare, specialist, or long valid words; those receive a higher difficulty score instead.
-- Runtime queries must filter `enabled = 1` and select by difficulty as needed. Do not add a second flat `.txt` or `.json` vocabulary resource alongside the SQLite deck.
-- `GuessWho/Features/Alias/AliasVocabularyPreviewScreen.swift` is intentionally read-only. It pages 24 words at a time to inspect the dataset and is not an Alias game implementation.
-- Rebuild the deck with `bin/build_alias_words`. It accepts `mph_ua.db` through `--source`, and either a generic `lemma<TAB>count` frequency TSV or UberText's `ubertext_freq.csv.xz` through `--frequency`. Use a `.sqlite` output path to generate the bundled runtime database.
-- The importer normalizes NFC, removes the source dictionary stress marker, lowercases, collapses whitespace, and normalizes apostrophes to U+02BC. It deduplicates normalized words and matches UberText frequencies by both lemma and Universal POS, preventing homonym frequencies from crossing parts of speech.
-- Difficulty is a continuous `1.0...5.0` score derived from inverse logarithmic frequency (75%) and normalized word length (25%). Missing frequencies are retained and score toward the hard end. Inspect sample distributions after every rebuild; use a small blacklist/override layer later if needed rather than manually curating the entire deck.
-- Build inputs are not committed: the current source dictionary is `mph_ua.db` from `mphdict`, and the current frequency source is UberText 2.0's lemma-frequency export. The generated SQLite deck is intentionally committed because this is an offline, at-home, non-commercial app and the 35 MB database keeps builds reproducible. If frequent database revisions become necessary, evaluate Git LFS or release-time generation.
-- Keep `AliasVocabularyAttribution.md` bundled with the deck. `mphdict` data uses ODbL/DbCL; UberText is CC BY-NC-SA 4.0. This project is for personal, at-home, non-commercial use. Re-evaluate the data licence and distribution obligations before any commercial or wider public release.
-
-## Engineering Practices
-
-- Work as an experienced iOS/SwiftUI engineer: inspect relevant code first, make the smallest maintainable change, consider user flow/accessibility/localization, surface material tradeoffs, validate affected behavior, and report evidence plus remaining risks.
-- Keep files focused. Do not turn a large screen or model into the default home for unrelated code; extract a new view, model, or helper when it has a clear independent responsibility.
-- Keep feature code within its feature directory. Put reusable, feature-agnostic UI in `Shared/UI`; avoid creating a generic shared abstraction until at least two consumers genuinely need it.
-- Preserve `GameState` as the single source of truth for game rules and navigation. Views render state and send user intents; they should not duplicate transition logic, mutate state indirectly, or infer rules that belong in the model.
-- Keep SwiftUI view bodies readable: compose named subviews for meaningful screen sections, pass only the data and actions each child needs, and keep layout-only helpers near their owning view.
-- Prefer small, explicit types and methods over flag combinations or untyped string state. Extend existing enums such as `AppScreen`, `Phase`, `Game`, and `Player` when they model the domain.
-- Keep the visual language consistent by reusing existing tokens and controls before adding new colors, fonts, shadows, or button variants. If a style becomes broadly useful, move it deliberately into a focused shared UI file.
-- Do not hard-code user-facing text in views. Add localized keys and translations for both English and Ukrainian, and use the localization catalog.
-- Preserve offline, pass-and-play behavior. Do not add network dependencies, accounts, analytics, or persistence of round state unless the task explicitly calls for them.
-- Avoid broad refactors during a scoped feature or bug fix. Change the smallest coherent boundary, retain unrelated user changes, and clean up only code made obsolete by the work.
-- Before handoff, run the narrowest useful validation: build for compilation or manually exercise affected flow when available, run a focused `rg` search for stale references after renames/removals, and run `git diff --check`.
-
-## Cleanup After Changes
-
-After a feature or UI refactor, remove code and resources made obsolete by the change. Check for unused helpers, views, state, assets, localization catalog entries, and localized string keys. Keep entries that are still referenced elsewhere, and run a focused search plus `git diff --check` before handoff.
+- `alias_uk_words.sqlite` is the offline source of truth; do not add a second flat word resource.
+- The deck contains nouns and optionally adjectives. Verbs are not playable.
+- Keep `AliasVocabularyAttribution.md` bundled with the deck.
+- Rebuild the database with `bin/build_alias_words` only when intentionally changing vocabulary data.

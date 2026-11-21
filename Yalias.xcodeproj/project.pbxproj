@@ -1,0 +1,417 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		C793F001AABBCCDD00112201 /* AliasStatisticsFunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C793F001AABBCCDD00112202 /* AliasStatisticsFunnel.swift */; };
+		E341AAA00000000000000003 /* AliasWordExplanationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E341AAA00000000000000004 /* AliasWordExplanationSheet.swift */; };
+		E341AAA00000000000000001 /* AliasWordExplanationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E341AAA00000000000000002 /* AliasWordExplanationService.swift */; };
+		A86CC82A1E12400DA9C18101 /* AliasVocabularyReviewLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A86CC82A1E12400DA9C18102 /* AliasVocabularyReviewLoader.swift */; };
+		A1B2C3D4E5F60718293A4B61 /* YaliasApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B51 /* YaliasApp.swift */; };
+		A1B2C3D4E5F60718293A4B65 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B55 /* Assets.xcassets */; };
+		A1B2C3D4E5F60718293A4B66 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B69 /* Localizable.strings */; };
+		A1B2C3D4E5F60718293A4B6A /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B6B /* Localization.swift */; };
+		A1B2C3D4E5F60718293A4B6D /* Yakutovych.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B6C /* Yakutovych.ttf */; };
+		A1B2C3D4E5F60718293A4B9C /* LanguageFlagView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B9D /* LanguageFlagView.swift */; };
+		F1E2D3C4B5A6978877665501 /* AliasSettingsDrawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2D3C4B5A6978877665502 /* AliasSettingsDrawer.swift */; };
+		F1E2D3C4B5A6978877665503 /* StudioDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2D3C4B5A6978877665504 /* StudioDesignSystem.swift */; };
+		F0E1D2C3B4A5968778695A01 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E1D2C3B4A5968778695A02 /* ContentView.swift */; };
+		B2C3D4E5F60718293A4B601 /* AliasVocabulary.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B602 /* AliasVocabulary.swift */; };
+		B2C3D4E5F60718293A4B603 /* alias_uk_words.sqlite in Resources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B604 /* alias_uk_words.sqlite */; };
+		B2C3D4E5F60718293A4B605 /* AliasVocabularyAttribution.md in Resources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B606 /* AliasVocabularyAttribution.md */; };
+		B2C3D4E5F60718293A4B607 /* AliasVocabularyReviewScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B608 /* AliasVocabularyReviewScreen.swift */; };
+		B2C3D4E5F60718293A4B609 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B60A /* libsqlite3.tbd */; };
+		B2C3D4E5F60718293A4B60B /* AliasHomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B60C /* AliasHomeScreen.swift */; };
+		D4E5F60718293A4B60C7001 /* AliasGameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F60718293A4B60C7002 /* AliasGameState.swift */; };
+		D4E5F60718293A4B60C7003 /* AliasGameplayScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F60718293A4B60C7004 /* AliasGameplayScreen.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		C793F001AABBCCDD00112202 /* AliasStatisticsFunnel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasStatisticsFunnel.swift; sourceTree = "<group>"; };
+		E341AAA00000000000000005 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
+		E341AAA00000000000000004 /* AliasWordExplanationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasWordExplanationSheet.swift; sourceTree = "<group>"; };
+		E341AAA00000000000000002 /* AliasWordExplanationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasWordExplanationService.swift; sourceTree = "<group>"; };
+		A86CC82A1E12400DA9C18102 /* AliasVocabularyReviewLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasVocabularyReviewLoader.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B51 /* YaliasApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YaliasApp.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B55 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B57 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B58 /* YALIAS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = YALIAS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1B2C3D4E5F60718293A4B67 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B68 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Localizable.strings; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B6B /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B6C /* Yakutovych.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Yakutovych.ttf; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B9D /* LanguageFlagView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/UI/LanguageFlagView.swift; sourceTree = "<group>"; };
+		F1E2D3C4B5A6978877665502 /* AliasSettingsDrawer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/UI/AliasSettingsDrawer.swift; sourceTree = "<group>"; };
+		F1E2D3C4B5A6978877665504 /* StudioDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/UI/StudioDesignSystem.swift; sourceTree = "<group>"; };
+		F0E1D2C3B4A5968778695A02 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A4B602 /* AliasVocabulary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasVocabulary.swift; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A4B604 /* alias_uk_words.sqlite */ = {isa = PBXFileReference; lastKnownFileType = file; path = Features/Alias/Resources/alias_uk_words.sqlite; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A4B606 /* AliasVocabularyAttribution.md */ = {isa = PBXFileReference; lastKnownFileType = text.markdown; path = Features/Alias/Resources/AliasVocabularyAttribution.md; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A4B608 /* AliasVocabularyReviewScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasVocabularyReviewScreen.swift; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A4B60A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		B2C3D4E5F60718293A4B60C /* AliasHomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasHomeScreen.swift; sourceTree = "<group>"; };
+		D4E5F60718293A4B60C7002 /* AliasGameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasGameState.swift; sourceTree = "<group>"; };
+		D4E5F60718293A4B60C7004 /* AliasGameplayScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Alias/AliasGameplayScreen.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A1B2C3D4E5F60718293A4B80 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B2C3D4E5F60718293A4B609 /* libsqlite3.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A1B2C3D4E5F60718293A4B40 = {
+			isa = PBXGroup;
+			children = (
+				E341AAA00000000000000005 /* Config.xcconfig */,
+				A1B2C3D4E5F60718293A4B41 /* Yalias */,
+				A1B2C3D4E5F60718293A4B42 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F60718293A4B41 /* Yalias */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F60718293A4B51 /* YaliasApp.swift */,
+				A1B2C3D4E5F60718293A4B9D /* LanguageFlagView.swift */,
+				F1E2D3C4B5A6978877665502 /* AliasSettingsDrawer.swift */,
+				F1E2D3C4B5A6978877665504 /* StudioDesignSystem.swift */,
+				F0E1D2C3B4A5968778695A02 /* ContentView.swift */,
+				E341AAA00000000000000002 /* AliasWordExplanationService.swift */,
+				E341AAA00000000000000004 /* AliasWordExplanationSheet.swift */,
+				B2C3D4E5F60718293A4B602 /* AliasVocabulary.swift */,
+				B2C3D4E5F60718293A4B604 /* alias_uk_words.sqlite */,
+				B2C3D4E5F60718293A4B606 /* AliasVocabularyAttribution.md */,
+				B2C3D4E5F60718293A4B608 /* AliasVocabularyReviewScreen.swift */,
+				C793F001AABBCCDD00112202 /* AliasStatisticsFunnel.swift */,
+				A86CC82A1E12400DA9C18102 /* AliasVocabularyReviewLoader.swift */,
+				B2C3D4E5F60718293A4B60C /* AliasHomeScreen.swift */,
+				D4E5F60718293A4B60C7002 /* AliasGameState.swift */,
+				D4E5F60718293A4B60C7004 /* AliasGameplayScreen.swift */,
+				A1B2C3D4E5F60718293A4B6B /* Localization.swift */,
+				A1B2C3D4E5F60718293A4B69 /* Localizable.strings */,
+				A1B2C3D4E5F60718293A4B55 /* Assets.xcassets */,
+				A1B2C3D4E5F60718293A4B6C /* Yakutovych.ttf */,
+				A1B2C3D4E5F60718293A4B57 /* Info.plist */,
+			);
+			path = Yalias;
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F60718293A4B42 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F60718293A4B58 /* YALIAS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXVariantGroup section */
+		A1B2C3D4E5F60718293A4B69 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A1B2C3D4E5F60718293A4B67 /* en */,
+				A1B2C3D4E5F60718293A4B68 /* uk */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin PBXNativeTarget section */
+		A1B2C3D4E5F60718293A4B70 /* YALIAS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1B2C3D4E5F60718293A4B92 /* Build configuration list for PBXNativeTarget "YALIAS" */;
+			buildPhases = (
+				A1B2C3D4E5F60718293A4B81 /* Sources */,
+				A1B2C3D4E5F60718293A4B80 /* Frameworks */,
+				A1B2C3D4E5F60718293A4B82 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = YALIAS;
+			productName = YALIAS;
+			productReference = A1B2C3D4E5F60718293A4B58 /* YALIAS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A1B2C3D4E5F60718293A4B30 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					A1B2C3D4E5F60718293A4B70 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = A1B2C3D4E5F60718293A4B91 /* Build configuration list for PBXProject "Yalias" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				uk,
+			);
+			mainGroup = A1B2C3D4E5F60718293A4B40;
+			productRefGroup = A1B2C3D4E5F60718293A4B42 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1B2C3D4E5F60718293A4B70 /* YALIAS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A1B2C3D4E5F60718293A4B82 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1B2C3D4E5F60718293A4B65 /* Assets.xcassets in Resources */,
+				A1B2C3D4E5F60718293A4B66 /* Localizable.strings in Resources */,
+				A1B2C3D4E5F60718293A4B6D /* Yakutovych.ttf in Resources */,
+				B2C3D4E5F60718293A4B603 /* alias_uk_words.sqlite in Resources */,
+				B2C3D4E5F60718293A4B605 /* AliasVocabularyAttribution.md in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A1B2C3D4E5F60718293A4B81 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1B2C3D4E5F60718293A4B61 /* YaliasApp.swift in Sources */,
+				A1B2C3D4E5F60718293A4B6A /* Localization.swift in Sources */,
+				A1B2C3D4E5F60718293A4B9C /* LanguageFlagView.swift in Sources */,
+				F1E2D3C4B5A6978877665501 /* AliasSettingsDrawer.swift in Sources */,
+				F1E2D3C4B5A6978877665503 /* StudioDesignSystem.swift in Sources */,
+				F0E1D2C3B4A5968778695A01 /* ContentView.swift in Sources */,
+				E341AAA00000000000000001 /* AliasWordExplanationService.swift in Sources */,
+				E341AAA00000000000000003 /* AliasWordExplanationSheet.swift in Sources */,
+				B2C3D4E5F60718293A4B601 /* AliasVocabulary.swift in Sources */,
+				B2C3D4E5F60718293A4B607 /* AliasVocabularyReviewScreen.swift in Sources */,
+				C793F001AABBCCDD00112201 /* AliasStatisticsFunnel.swift in Sources */,
+				A86CC82A1E12400DA9C18101 /* AliasVocabularyReviewLoader.swift in Sources */,
+				B2C3D4E5F60718293A4B60B /* AliasHomeScreen.swift in Sources */,
+				D4E5F60718293A4B60C7001 /* AliasGameState.swift in Sources */,
+				D4E5F60718293A4B60C7003 /* AliasGameplayScreen.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		A1B2C3D4E5F60718293A4BA1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A1B2C3D4E5F60718293A4BA2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A1B2C3D4E5F60718293A4BB1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = E341AAA00000000000000005 /* Config.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3ZN2W7N3QX;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Yalias/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.beskhlibnyi.guesswho;
+				PRODUCT_NAME = YALIAS;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A1B2C3D4E5F60718293A4BB2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = E341AAA00000000000000005 /* Config.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3ZN2W7N3QX;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Yalias/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.beskhlibnyi.guesswho;
+				PRODUCT_NAME = YALIAS;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1B2C3D4E5F60718293A4B91 /* Build configuration list for PBXProject "Yalias" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B2C3D4E5F60718293A4BA1 /* Debug */,
+				A1B2C3D4E5F60718293A4BA2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1B2C3D4E5F60718293A4B92 /* Build configuration list for PBXNativeTarget "YALIAS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B2C3D4E5F60718293A4BB1 /* Debug */,
+				A1B2C3D4E5F60718293A4BB2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1B2C3D4E5F60718293A4B30 /* Project object */;
+}
