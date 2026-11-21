@@ -10,9 +10,9 @@ struct AliasHomeScreen: View {
     @AppStorage(AliasGameState.gameModeKey) private var gameModeRawValue = AliasGameState.GameMode.classic.rawValue
     @AppStorage(AliasGameState.targetScoreKey) private var targetScore = AliasGameState.defaultTargetScore
     @AppStorage(AliasGameState.turnDurationKey) private var turnDuration = AliasGameState.defaultTurnDuration
-    @AppStorage(AliasGameState.easyWordsKey) private var includesEasyWords = true
+    @AppStorage(AliasGameState.easyWordsKey) private var includesEasyWords = false
     @AppStorage(AliasGameState.mediumWordsKey) private var includesMediumWords = true
-    @AppStorage(AliasGameState.hardWordsKey) private var includesHardWords = true
+    @AppStorage(AliasGameState.hardWordsKey) private var includesHardWords = false
     @AppStorage(AliasGameState.expertWordsKey) private var includesExpertWords = false
     @AppStorage(AliasVocabulary.includeAdjectivesKey) private var includeAdjectives = true
     @State private var showsNewMatchConfirmation = false
@@ -20,22 +20,23 @@ struct AliasHomeScreen: View {
 
     var body: some View {
         ZStack {
-            ScrollView(.vertical, showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 20) {
-                    header
-                    settings
-                    actions
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 28)
-                .padding(.bottom, 36)
+            YaliasPaperBackgroundView()
+
+            VStack(spacing: 12) {
+                header
+                settings
+                actions
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 6)
+            .padding(.bottom, 12)
 
             AliasSettingsDrawer(
                 languageOverride: $languageOverride,
                 playerOneName: $playerOneName,
                 playerTwoName: $playerTwoName,
-                isPresented: $showsSettings
+                isPresented: $showsSettings,
+                showsRail: false
             )
         }
         .alert(copy("alias.menu.alert.title", fallback: "Start a new match?"), isPresented: $showsNewMatchConfirmation) {
@@ -44,113 +45,118 @@ struct AliasHomeScreen: View {
         } message: {
             Text(copy("alias.menu.alert.message", fallback: "The current YALIAS match will be cleared."))
         }
-        .onAppear {
-            if AliasGameState.GameMode(rawValue: gameModeRawValue) == nil {
-                gameModeRawValue = AliasGameState.GameMode.classic.rawValue
-            }
-            if !AliasGameState.targetScoreRange.contains(targetScore) {
-                targetScore = AliasGameState.defaultTargetScore
-            }
-            if !AliasGameState.turnDurationRange.contains(turnDuration) {
-                turnDuration = AliasGameState.defaultTurnDuration
-            }
-            if selectedDifficultyLevels.isEmpty {
-                includesEasyWords = true
-                includesMediumWords = true
-                includesHardWords = true
-            }
-        }
+        .onAppear(perform: repairPersistedSetup)
     }
 
     private var header: some View {
-        HStack {
-            AliasBrandTitle()
-                .foregroundStyle(StudioTheme.ink)
-            Spacer()
+        ZStack(alignment: .topTrailing) {
+            VStack(spacing: 3) {
+                HStack(spacing: -10) {
+                    Image(systemName: "bubble.fill")
+                        .foregroundStyle(StudioTheme.mustard)
+                        .font(.system(size: 40, weight: .bold))
+                        .rotationEffect(.degrees(-8))
+                    Image(systemName: "bubble.fill")
+                        .foregroundStyle(StudioTheme.vermilion)
+                        .font(.system(size: 48, weight: .bold))
+                        .rotationEffect(.degrees(7))
+                }
+                .frame(height: 40)
+
+                AliasBrandTitle()
+                    .foregroundStyle(StudioTheme.paperInk)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.72)
+
+                Capsule()
+                    .fill(StudioTheme.mustard)
+                    .frame(width: 166, height: 7)
+                    .rotationEffect(.degrees(-2))
+                    .offset(y: -7)
+
+                Text(copy("alias.menu.tagline", fallback: "Pass. Explain. Guess."))
+                    .font(StudioTypography.paperControl)
+                    .foregroundStyle(StudioTheme.paperInk)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 22)
+                    .frame(minHeight: 48)
+                    .background(TornPaperShape().fill(StudioTheme.paper))
+                    .overlay(alignment: .bottom) {
+                        Capsule()
+                            .fill(StudioTheme.vermilion)
+                            .frame(width: 176, height: 5)
+                            .rotationEffect(.degrees(-2))
+                            .offset(y: -8)
+                    }
+                    .shadow(color: StudioTheme.paperInk.opacity(0.12), radius: 5, x: 1, y: 4)
+            }
+            .frame(maxWidth: .infinity)
+
+            Button {
+                withAnimation(.easeInOut(duration: 0.35)) {
+                    showsSettings = true
+                }
+            } label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundStyle(StudioTheme.paperInk)
+                    .frame(width: 46, height: 46)
+                    .background(StudioTheme.paper, in: Circle())
+                    .overlay { Circle().stroke(StudioTheme.paperInk.opacity(0.12)) }
+                    .shadow(color: StudioTheme.paperInk.opacity(0.16), radius: 5, x: 1, y: 4)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(copy("settings.open", fallback: "Open settings"))
         }
     }
 
     private var settings: some View {
-        settingsCard {
-            modePicker
+        PaperPanel(padding: 14) {
+            VStack(spacing: 10) {
+                modePicker
+                goalPicker
 
-            Divider()
-                .overlay(StudioTheme.line.opacity(0.6))
-
-            goalPicker
-            if selectedGameMode == .classic {
-                turnDurationPicker
-            }
-
-            Divider()
-                .overlay(StudioTheme.line.opacity(0.6))
-
-            difficultyPicker
-
-            Divider()
-                .overlay(StudioTheme.line.opacity(0.6))
-
-            adjectivesPicker
-        }
-    }
-
-    private var actions: some View {
-        VStack(spacing: 14) {
-            if aliasGameState.canResume {
-                Button {
-                    aliasGameState.resumeMatch()
-                    navigationState.showGame()
-                } label: {
-                    Text(copy("alias.menu.resume", fallback: "Resume Match"))
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(ActionButtonStyle(kind: .filled(StudioTheme.teal)))
-            } else {
-                Button(action: newMatchTapped) {
-                    Text(copy("alias.menu.new_match", fallback: "New Match"))
-                        .frame(maxWidth: .infinity)
-                }
-                    .buttonStyle(ActionButtonStyle(kind: .filled(StudioTheme.coral)))
-            }
-
-            HStack(spacing: 18) {
-                if aliasGameState.canResume {
-                    compactAction(
-                        copy("alias.menu.new_match", fallback: "New Match"),
-                        systemImage: "arrow.counterclockwise",
-                        action: newMatchTapped
-                    )
+                if selectedGameMode == .classic {
+                    turnDurationPicker
+                        .transition(.opacity.combined(with: .move(edge: .top)))
                 }
 
-                compactAction(
-                    copy("alias.menu.review", fallback: "Review"),
-                    systemImage: "text.book.closed",
-                    action: navigationState.showReview
-                )
+                difficultyPicker
+                adjectivesPicker
             }
-            .frame(maxWidth: .infinity)
+            .animation(.snappy(duration: 0.25), value: selectedGameMode)
         }
     }
 
     private var modePicker: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(copy("alias.menu.mode", fallback: "Game mode"))
-                .font(StudioTypography.label)
-                .foregroundStyle(StudioTheme.ink)
-
-            Picker(copy("alias.menu.mode", fallback: "Game mode"), selection: $gameModeRawValue) {
-                ForEach(AliasGameState.GameMode.allCases) { mode in
-                    Text(modeName(mode)).tag(mode.rawValue)
+        HStack(spacing: 0) {
+            ForEach(AliasGameState.GameMode.allCases) { mode in
+                let isSelected = selectedGameMode == mode
+                Button {
+                    gameModeRawValue = mode.rawValue
+                } label: {
+                    Text(modeName(mode))
+                        .font(StudioTypography.paperControl)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
+                        .frame(maxWidth: .infinity, minHeight: 50)
+                        .foregroundStyle(isSelected ? StudioTheme.paperHighlight : StudioTheme.paperInk)
+                        .background(isSelected ? StudioTheme.olive : Color.clear, in: Capsule())
                 }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
-            .pickerStyle(.segmented)
-            .tint(StudioTheme.ink)
         }
+        .padding(4)
+        .background(StudioTheme.paperHighlight, in: Capsule())
+        .overlay { Capsule().stroke(StudioTheme.paperInk, lineWidth: 2.2) }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(copy("alias.menu.mode", fallback: "Game mode"))
     }
 
     private var goalPicker: some View {
         AliasValueSlider(
-            title: copy("alias.menu.goal", fallback: "Goal score"),
+            title: copy("alias.menu.goal", fallback: "Goal"),
             selection: $targetScore,
             range: AliasGameState.targetScoreRange,
             valueLabel: { copy("alias.menu.goal.option", fallback: "%d points", $0) }
@@ -167,76 +173,91 @@ struct AliasHomeScreen: View {
     }
 
     private var difficultyPicker: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(copy("alias.menu.groups", fallback: "Word groups"))
-                .font(StudioTypography.label)
-                .foregroundStyle(StudioTheme.ink)
-
-            HStack(spacing: 8) {
-                ForEach(AliasVocabulary.DifficultyLevel.allCases, id: \.self) { level in
-                    let isSelected = selectedDifficultyLevels.contains(level)
-                    setupOptionButton(
-                        title: difficultyName(level),
-                        accessibilityLabel: difficultyName(level),
-                        isSelected: isSelected
-                    ) {
-                        toggleDifficulty(level)
-                    }
-                    .disabled(isSelected && selectedDifficultyLevels.count == 1)
+        HStack(spacing: 7) {
+            ForEach(AliasVocabulary.DifficultyLevel.allCases, id: \.self) { level in
+                let isSelected = selectedDifficultyLevels.contains(level)
+                Button {
+                    selectDifficulty(level)
+                } label: {
+                    Text(difficultyName(level))
+                        .font(StudioTypography.compactLabel)
+                        .foregroundStyle(StudioTheme.paperInk)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.62)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .background(difficultyColor(level).opacity(isSelected ? 1 : 0.27), in: Capsule())
+                        .overlay {
+                            Capsule()
+                                .stroke(StudioTheme.paperHighlight, lineWidth: isSelected ? 4 : 0)
+                                .padding(-2)
+                        }
+                        .shadow(
+                            color: isSelected ? StudioTheme.paperInk.opacity(0.14) : .clear,
+                            radius: 4,
+                            x: 1,
+                            y: 3
+                        )
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel(difficultyName(level))
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
-
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(copy("alias.menu.groups", fallback: "Word groups"))
     }
 
     private var adjectivesPicker: some View {
         Toggle(isOn: $includeAdjectives) {
             Text(copy("alias.filter.adjectives", fallback: "Include adjectives"))
-                .font(StudioTypography.subheadline)
-                .foregroundStyle(StudioTheme.ink)
+                .font(StudioTypography.subheadline.weight(.semibold))
+                .foregroundStyle(StudioTheme.paperInk)
+                .lineLimit(2)
         }
-        .tint(StudioTheme.teal)
+        .tint(StudioTheme.olive)
+        .padding(.horizontal, 16)
+        .frame(minHeight: 56)
+        .background(StudioTheme.paperHighlight.opacity(0.74), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(alignment: .bottomLeading) {
+            Capsule()
+                .fill(StudioTheme.vermilion)
+                .frame(width: 112, height: 4)
+                .rotationEffect(.degrees(-2))
+                .offset(x: 18, y: -8)
+        }
+        .shadow(color: StudioTheme.paperInk.opacity(0.08), radius: 4, x: 1, y: 3)
     }
 
-    private func setupOptionButton(
-        title: String,
-        accessibilityLabel: String,
-        isSelected: Bool,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(title, action: action)
-            .font(StudioTypography.compactLabel)
-            .foregroundStyle(isSelected ? StudioTheme.teal : StudioTheme.muted)
-            .frame(maxWidth: .infinity)
-            .frame(minHeight: 40)
-            .background(
-                isSelected ? StudioTheme.teal.opacity(0.13) : StudioTheme.softWash.opacity(0.7),
-                in: Capsule()
-            )
-            .overlay {
-                Capsule()
-                    .stroke(isSelected ? StudioTheme.teal.opacity(0.3) : Color.clear)
+    private var actions: some View {
+        VStack(spacing: 10) {
+            Button(action: primaryAction) {
+                Text(
+                    aliasGameState.canResume
+                        ? copy("alias.menu.resume", fallback: "Resume Match")
+                        : copy("alias.menu.start_game", fallback: "Start game")
+                )
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel(accessibilityLabel)
-            .accessibilityAddTraits(isSelected ? .isSelected : [])
-    }
+            .buttonStyle(
+                PaperActionButtonStyle(
+                    kind: .filled(aliasGameState.canResume ? StudioTheme.olive : StudioTheme.vermilion)
+                )
+            )
 
-    private func settingsCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 18, content: content)
-            .padding(20)
-            .background(StudioTheme.card.opacity(0.82), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-    }
+            Button(action: navigationState.showReview) {
+                Text(copy("alias.vocabulary_review.title", fallback: "Review words"))
+            }
+            .buttonStyle(PaperActionButtonStyle(kind: .outlined))
 
-    private func compactAction(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Label(title, systemImage: systemImage)
-                .font(StudioTypography.footnote.weight(.semibold))
-                .foregroundStyle(StudioTheme.inkSoft)
-                .padding(.horizontal, 10)
-                .frame(minHeight: 44)
+            if aliasGameState.canResume {
+                Button(action: newMatchTapped) {
+                    Label(copy("alias.menu.new_match", fallback: "New Match"), systemImage: "arrow.counterclockwise")
+                        .font(StudioTypography.footnote.weight(.semibold))
+                        .foregroundStyle(StudioTheme.paperInk)
+                        .frame(minHeight: 44)
+                }
+                .buttonStyle(.plain)
+            }
         }
-        .buttonStyle(.plain)
     }
 
     private var selectedDifficultyLevels: Set<AliasVocabulary.DifficultyLevel> {
@@ -254,28 +275,42 @@ struct AliasHomeScreen: View {
 
     private func modeName(_ mode: AliasGameState.GameMode) -> String {
         switch mode {
-        case .classic:
-            return copy("alias.menu.mode.classic", fallback: "Classic")
-        case .fastest:
-            return copy("alias.menu.mode.fastest", fallback: "Fastest")
+        case .classic: copy("alias.menu.mode.classic", fallback: "Classic")
+        case .fastest: copy("alias.menu.mode.fastest", fallback: "Fastest")
         }
     }
 
-    private func toggleDifficulty(_ level: AliasVocabulary.DifficultyLevel) {
+    private func difficultyColor(_ level: AliasVocabulary.DifficultyLevel) -> Color {
         switch level {
-        case .easy: includesEasyWords.toggle()
-        case .medium: includesMediumWords.toggle()
-        case .hard: includesHardWords.toggle()
-        case .expert: includesExpertWords.toggle()
+        case .easy: StudioTheme.sky
+        case .medium: StudioTheme.mustard
+        case .hard: StudioTheme.vermilion
+        case .expert: StudioTheme.sage
         }
+    }
+
+    private func selectDifficulty(_ level: AliasVocabulary.DifficultyLevel) {
+        includesEasyWords = level == .easy
+        includesMediumWords = level == .medium
+        includesHardWords = level == .hard
+        includesExpertWords = level == .expert
     }
 
     private func difficultyName(_ level: AliasVocabulary.DifficultyLevel) -> String {
         switch level {
-        case .easy: return copy("alias.vocabulary_review.level.easy", fallback: "Easy")
-        case .medium: return copy("alias.vocabulary_review.level.medium", fallback: "Medium")
-        case .hard: return copy("alias.vocabulary_review.level.hard", fallback: "Hard")
-        case .expert: return copy("alias.vocabulary_review.level.expert", fallback: "Expert")
+        case .easy: copy("alias.vocabulary_review.level.easy", fallback: "Easy")
+        case .medium: copy("alias.vocabulary_review.level.medium", fallback: "Medium")
+        case .hard: copy("alias.vocabulary_review.level.hard", fallback: "Hard")
+        case .expert: copy("alias.vocabulary_review.level.expert", fallback: "Expert")
+        }
+    }
+
+    private func primaryAction() {
+        if aliasGameState.canResume {
+            aliasGameState.resumeMatch()
+            navigationState.showGame()
+        } else {
+            startMatch()
         }
     }
 
@@ -296,6 +331,21 @@ struct AliasHomeScreen: View {
             includeAdjectives: includeAdjectives
         )
         navigationState.showGame()
+    }
+
+    private func repairPersistedSetup() {
+        if AliasGameState.GameMode(rawValue: gameModeRawValue) == nil {
+            gameModeRawValue = AliasGameState.GameMode.classic.rawValue
+        }
+        if !AliasGameState.targetScoreRange.contains(targetScore) {
+            targetScore = AliasGameState.defaultTargetScore
+        }
+        if !AliasGameState.turnDurationRange.contains(turnDuration) {
+            turnDuration = AliasGameState.defaultTurnDuration
+        }
+        if selectedDifficultyLevels.count != 1 {
+            selectDifficulty(.medium)
+        }
     }
 
     private func copy(_ key: String, fallback: String) -> String {
@@ -338,30 +388,26 @@ private struct AliasValueSlider: View {
     let valueLabel: (Int) -> String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Text(title)
-                    .font(StudioTypography.subheadline)
-                    .foregroundStyle(StudioTheme.ink)
+                    .font(StudioTypography.subheadline.weight(.semibold))
+                    .foregroundStyle(StudioTheme.paperInk)
 
                 Spacer()
 
                 Text(valueLabel(selection))
-                    .font(StudioTypography.footnote.weight(.semibold))
-                    .foregroundStyle(StudioTheme.teal)
+                    .font(StudioTypography.subheadline.weight(.semibold))
+                    .foregroundStyle(StudioTheme.paperInk)
                     .contentTransition(.numericText())
             }
 
-            Slider(
-                value: Binding(
-                    get: { Double(selection) },
-                    set: { selection = Int($0.rounded()) }
-                ),
-                in: Double(range.lowerBound)...Double(range.upperBound),
-                step: 1
+            PaperSlider(
+                value: $selection,
+                range: range,
+                accessibilityValue: valueLabel(selection)
             )
-            .tint(StudioTheme.teal)
+            .accessibilityLabel(title)
         }
-        .sensoryFeedback(.selection, trigger: selection)
     }
 }

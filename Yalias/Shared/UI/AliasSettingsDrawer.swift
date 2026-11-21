@@ -6,9 +6,10 @@ struct AliasSettingsDrawer: View {
     @Binding var playerOneName: String
     @Binding var playerTwoName: String
     @Binding var isPresented: Bool
+    var showsRail = true
     @GestureState private var drawerDragTranslation: CGFloat = 0
 
-    private let railWidth: CGFloat = 48
+    private var railWidth: CGFloat { showsRail ? 48 : 0 }
 
     private var selectedLanguage: AliasLanguage {
         AliasLanguage.resolved(override: languageOverride)
@@ -48,8 +49,10 @@ struct AliasSettingsDrawer: View {
         let contentWidth = width - railWidth
 
         return HStack(spacing: 0) {
-            settingsRail
-                .gesture(railGesture(closedOffset: closedOffset))
+            if showsRail {
+                settingsRail
+                    .gesture(railGesture(closedOffset: closedOffset))
+            }
 
             settingsContent
                 .padding(.horizontal, 22)
@@ -58,11 +61,11 @@ struct AliasSettingsDrawer: View {
                 .frame(width: contentWidth)
                 .frame(maxHeight: .infinity, alignment: .top)
                 .background(
-                    StudioTheme.card,
+                    StudioTheme.paper,
                     in: UnevenRoundedRectangle(topLeadingRadius: 30, bottomLeadingRadius: 30)
                 )
-                .overlay(alignment: .leading) { Rectangle().fill(StudioTheme.line.opacity(0.7)).frame(width: 1) }
-                .shadow(color: StudioTheme.shadowStrong, radius: 10, x: -4, y: 0)
+                .overlay(alignment: .leading) { Rectangle().fill(StudioTheme.paperInk.opacity(0.22)).frame(width: 1.5) }
+                .shadow(color: StudioTheme.paperInk.opacity(0.18), radius: 12, x: -5, y: 0)
                 .compositingGroup()
                 .simultaneousGesture(drawerDragGesture(closedOffset: closedOffset))
         }
@@ -72,29 +75,44 @@ struct AliasSettingsDrawer: View {
 
     private var settingsContent: some View {
         VStack(alignment: .leading, spacing: 28) {
-            Text(copy("settings.title", fallback: "Settings"))
-                .font(StudioTypography.title)
-                .foregroundStyle(StudioTheme.ink)
+            HStack {
+                Text(copy("settings.title", fallback: "Settings"))
+                    .font(StudioTypography.paperTitle)
+                    .foregroundStyle(StudioTheme.paperInk)
+
+                Spacer()
+
+                Button(action: dismiss) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundStyle(StudioTheme.paperInk)
+                        .frame(width: 44, height: 44)
+                        .background(StudioTheme.paperHighlight, in: Circle())
+                        .overlay { Circle().stroke(StudioTheme.paperInk, lineWidth: 1.8) }
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(copy("settings.close", fallback: "Close settings"))
+            }
 
             settingsCard {
                 VStack(alignment: .leading, spacing: 14) {
                     Text(copy("settings.players.title", fallback: "Player names"))
                         .font(StudioTypography.label)
-                        .foregroundStyle(StudioTheme.muted)
+                        .foregroundStyle(StudioTheme.paperInk)
 
                     Text(copy("settings.players.message", fallback: "These names appear everywhere in the round flow."))
                         .font(StudioTypography.footnote)
-                        .foregroundStyle(StudioTheme.muted)
+                        .foregroundStyle(StudioTheme.paperInk.opacity(0.66))
 
                     playerNameField(
                         title: copy("player.one", fallback: "Player 1"),
                         text: $playerOneName,
-                        accent: StudioTheme.teal
+                        accent: StudioTheme.olive
                     )
                     playerNameField(
                         title: copy("player.two", fallback: "Player 2"),
                         text: $playerTwoName,
-                        accent: StudioTheme.coral
+                        accent: StudioTheme.vermilion
                     )
                 }
             }
@@ -103,7 +121,7 @@ struct AliasSettingsDrawer: View {
                 VStack(alignment: .leading, spacing: 14) {
                     Text(copy("settings.language.label", fallback: "Language"))
                         .font(StudioTypography.label)
-                        .foregroundStyle(StudioTheme.muted)
+                        .foregroundStyle(StudioTheme.paperInk)
 
                     languageOption(.english, title: copy("settings.language.english", fallback: "English"))
                     languageOption(.ukrainian, title: copy("settings.language.ukrainian", fallback: "Ukrainian"))
@@ -117,11 +135,12 @@ struct AliasSettingsDrawer: View {
     private func settingsCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         content()
             .padding(18)
-            .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .background(StudioTheme.paperHighlight.opacity(0.78), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .stroke(StudioTheme.line.opacity(0.8))
+                    .stroke(StudioTheme.paperInk.opacity(0.17), lineWidth: 1.3)
             }
+            .shadow(color: StudioTheme.paperInk.opacity(0.08), radius: 5, x: 1, y: 3)
     }
 
     private var settingsRail: some View {
@@ -155,7 +174,7 @@ struct AliasSettingsDrawer: View {
 
                 Text(title)
                     .font(StudioTypography.body)
-                    .foregroundStyle(StudioTheme.ink)
+                    .foregroundStyle(StudioTheme.paperInk)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                     .layoutPriority(1)
@@ -164,11 +183,11 @@ struct AliasSettingsDrawer: View {
 
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(isSelected ? StudioTheme.teal : StudioTheme.muted.opacity(0.55))
+                    .foregroundStyle(isSelected ? StudioTheme.olive : StudioTheme.paperInk.opacity(0.35))
             }
             .padding(.horizontal, 14)
             .frame(height: 56)
-            .background(isSelected ? StudioTheme.teal.opacity(0.10) : Color.white.opacity(0.46), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(isSelected ? StudioTheme.olive.opacity(0.14) : StudioTheme.paper.opacity(0.56), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
@@ -182,20 +201,20 @@ struct AliasSettingsDrawer: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title.uppercased())
                 .font(StudioTypography.label)
-                .foregroundStyle(StudioTheme.muted)
+                .foregroundStyle(StudioTheme.paperInk.opacity(0.62))
 
             TextField(copy("settings.player.placeholder", fallback: "Enter a name"), text: text)
                 .font(StudioTypography.body)
-                .foregroundStyle(StudioTheme.ink)
+                .foregroundStyle(StudioTheme.paperInk)
                 .textInputAutocapitalization(.words)
                 .disableAutocorrection(true)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 14)
-                .background(Color.white.opacity(0.92))
+                .background(StudioTheme.paper)
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
                 .overlay {
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(accent.opacity(0.2), lineWidth: 1)
+                        .stroke(accent.opacity(0.48), lineWidth: 1.5)
                 }
         }
     }

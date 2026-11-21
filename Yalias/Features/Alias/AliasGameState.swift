@@ -26,7 +26,7 @@ final class AliasGameState: ObservableObject {
     static let mediumWordsKey = "aliasIncludeMediumWords"
     static let hardWordsKey = "aliasIncludeHardWords"
     static let expertWordsKey = "aliasIncludeExpertWords"
-    static let defaultDifficultyLevels: Set<AliasVocabulary.DifficultyLevel> = [.easy, .medium, .hard]
+    static let defaultDifficultyLevels: Set<AliasVocabulary.DifficultyLevel> = [.medium]
 
     enum GameMode: String, CaseIterable, Identifiable {
         case classic

@@ -12,13 +12,15 @@
 "settings.player.placeholder" = "Enter a name";
 "app.title" = "YALIAS";
 "alias.vocabulary_review.title" = "Review words";
+"alias.menu.tagline" = "Pass. Explain. Guess.";
 "alias.menu.review" = "Review";
-"alias.menu.goal" = "Goal score";
+"alias.menu.goal" = "Goal";
 "alias.menu.goal.option" = "%d points";
 "alias.menu.time" = "Turn time";
 "alias.menu.time.option" = "%d sec";
 "alias.menu.groups" = "Word groups";
 "alias.menu.new_match" = "New Match";
+"alias.menu.start_game" = "Start game";
 "alias.menu.resume" = "Resume Match";
 "alias.menu.alert.title" = "Start a new match?";
 "alias.menu.alert.message" = "The current YALIAS match will be cleared.";

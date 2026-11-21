@@ -12,13 +12,15 @@
 "settings.player.placeholder" = "Введіть ім'я";
 "app.title" = "ЯЛІАС";
 "alias.vocabulary_review.title" = "Перевірити слова";
+"alias.menu.tagline" = "Передай. Поясни. Вгадай.";
 "alias.menu.review" = "Перевірити";
-"alias.menu.goal" = "Рахунок для перемоги";
+"alias.menu.goal" = "Мета";
 "alias.menu.goal.option" = "%d очок";
 "alias.menu.time" = "Час ходу";
 "alias.menu.time.option" = "%d с";
 "alias.menu.groups" = "Групи слів";
 "alias.menu.new_match" = "Новий матч";
+"alias.menu.start_game" = "Почати гру";
 "alias.menu.resume" = "Продовжити матч";
 "alias.menu.alert.title" = "Почати новий матч?";
 "alias.menu.alert.message" = "Поточний матч ЯЛІАС буде втрачено.";
