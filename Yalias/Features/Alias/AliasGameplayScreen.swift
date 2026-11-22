@@ -737,20 +737,178 @@ struct AliasGameplayScreen: View {
     }
 
     private func matchOverState(_ winner: AliasPlayer) -> some View {
-        contentScreen {
-            header(title: copy("alias.game.over.title", fallback: "%@ wins", playerName(winner)))
-            scoreBoard
-            Button(copy("alias.game.over.rematch", fallback: "Rematch")) {
-                aliasGameState.startMatch(
-                    mode: aliasGameState.configuration.mode,
-                    targetScore: aliasGameState.configuration.targetScore,
-                    turnDuration: Int(aliasGameState.configuration.turnDuration),
-                    difficultyLevels: aliasGameState.configuration.difficultyLevels,
-                    includeAdjectives: aliasGameState.configuration.includeAdjectives
-                )
+        ZStack {
+            YaliasPaperBackgroundView()
+
+            VStack(spacing: 14) {
+                matchWinnerTrophy
+
+                Text(copy("alias.game.over.title", fallback: "%@ wins", playerName(winner)))
+                    .font(StudioTypography.paperTitle)
+                    .foregroundStyle(StudioTheme.paperHighlight)
+                    .textCase(.uppercase)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.56)
+                    .padding(.horizontal, 20)
+                    .frame(maxWidth: .infinity, minHeight: 64)
+                    .background(TornPaperShape().fill(StudioTheme.olive))
+                    .shadow(color: StudioTheme.paperInk.opacity(0.15), radius: 5, x: 1, y: 4)
+                    .zIndex(2)
+
+                finalResultPanel(winner)
+                    .offset(y: -24)
+
+                Spacer(minLength: 0)
+
+                Button(copy("alias.game.over.rematch", fallback: "Play again")) {
+                    aliasGameState.startMatch(
+                        mode: aliasGameState.configuration.mode,
+                        targetScore: aliasGameState.configuration.targetScore,
+                        turnDuration: Int(aliasGameState.configuration.turnDuration),
+                        difficultyLevels: aliasGameState.configuration.difficultyLevels,
+                        includeAdjectives: aliasGameState.configuration.includeAdjectives
+                    )
+                }
+                .buttonStyle(PaperActionButtonStyle(kind: .filled(StudioTheme.vermilion)))
+
+                Button(copy("alias.game.over.main_menu", fallback: "Main menu"), action: returnToMenu)
+                    .buttonStyle(PaperActionButtonStyle(kind: .outlined))
             }
-            .buttonStyle(ActionButtonStyle(kind: .filled(StudioTheme.coral)))
-            menuButton
+            .padding(.horizontal, 24)
+            .padding(.top, 24)
+            .padding(.bottom, 24)
+        }
+    }
+
+    private var matchWinnerTrophy: some View {
+        ZStack {
+            Capsule()
+                .fill(StudioTheme.paperInk)
+                .frame(width: 4, height: 15)
+                .offset(y: -37)
+
+            Capsule()
+                .fill(StudioTheme.paperInk)
+                .frame(width: 4, height: 15)
+                .rotationEffect(.degrees(-42))
+                .offset(x: -28, y: -28)
+
+            Capsule()
+                .fill(StudioTheme.paperInk)
+                .frame(width: 4, height: 15)
+                .rotationEffect(.degrees(42))
+                .offset(x: 28, y: -28)
+
+            Image(systemName: "trophy.fill")
+                .font(.system(size: 50, weight: .black))
+                .foregroundStyle(StudioTheme.paperInk)
+
+            Image(systemName: "trophy.fill")
+                .font(.system(size: 42, weight: .black))
+                .foregroundStyle(StudioTheme.mustard)
+        }
+        .frame(width: 90, height: 74)
+        .accessibilityHidden(true)
+    }
+
+    private func finalResultPanel(_ winner: AliasPlayer) -> some View {
+        VStack(spacing: 20) {
+            Text(finalResultTitle)
+                .font(StudioTypography.paperTitle)
+                .foregroundStyle(StudioTheme.paperInk)
+                .textCase(.uppercase)
+                .lineLimit(1)
+                .minimumScaleFactor(0.68)
+
+            HStack(spacing: 14) {
+                finalResultTile(.one, winner: winner, accent: StudioTheme.olive)
+                finalResultTile(.two, winner: winner, accent: StudioTheme.sky)
+            }
+        }
+        .padding(.horizontal, 18)
+        .padding(.top, 52)
+        .padding(.bottom, 22)
+        .frame(maxWidth: .infinity)
+        .background {
+            ZStack {
+                TornPaperShape()
+                    .fill(StudioTheme.mustard)
+                    .offset(x: -6, y: 7)
+                TornPaperShape()
+                    .fill(StudioTheme.sky)
+                    .offset(x: 7, y: 7)
+                TornPaperShape()
+                    .fill(StudioTheme.olive)
+                    .offset(y: 10)
+                TornPaperShape()
+                    .fill(StudioTheme.paperHighlight)
+            }
+        }
+        .overlay {
+            TornPaperShape()
+                .stroke(StudioTheme.paperInk, lineWidth: 1.8)
+        }
+        .shadow(color: StudioTheme.paperInk.opacity(0.12), radius: 6, x: 1, y: 5)
+    }
+
+    private func finalResultTile(
+        _ player: AliasPlayer,
+        winner: AliasPlayer,
+        accent: Color
+    ) -> some View {
+        VStack(spacing: -14) {
+            Text(playerName(player))
+                .font(StudioTypography.subheadline.weight(.bold))
+                .foregroundStyle(StudioTheme.paperHighlight)
+                .lineLimit(1)
+                .minimumScaleFactor(0.58)
+                .padding(.horizontal, 8)
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .background(TornPaperShape().fill(accent))
+                .zIndex(2)
+
+            VStack(spacing: 6) {
+                Text(finalResultValue(for: player))
+                    .font(.system(size: 52, weight: .black, design: .rounded))
+                    .foregroundStyle(StudioTheme.paperInk)
+                    .monospacedDigit()
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.58)
+
+                Capsule()
+                    .fill(player == winner ? StudioTheme.mustard : .clear)
+                    .frame(height: 5)
+                    .padding(.horizontal, 12)
+            }
+            .padding(.horizontal, 10)
+            .padding(.top, 20)
+            .padding(.bottom, 10)
+            .frame(maxWidth: .infinity, minHeight: 112)
+            .background(TornPaperShape().fill(StudioTheme.paperHighlight))
+            .overlay {
+                TornPaperShape()
+                    .stroke(StudioTheme.paperInk, lineWidth: 1.8)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var finalResultTitle: String {
+        switch aliasGameState.configuration.mode {
+        case .classic:
+            return copy("alias.game.over.final_score", fallback: "Final score")
+        case .fastest:
+            return copy("alias.game.over.final_time", fallback: "Final time")
+        }
+    }
+
+    private func finalResultValue(for player: AliasPlayer) -> String {
+        switch aliasGameState.configuration.mode {
+        case .classic:
+            return String(aliasGameState.score(for: player))
+        case .fastest:
+            guard let elapsedTime = aliasGameState.elapsedTime(for: player) else { return "—" }
+            return formatDuration(elapsedTime, showsTenths: true)
         }
     }
 

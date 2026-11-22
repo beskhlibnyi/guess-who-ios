@@ -72,7 +72,10 @@
 "alias.game.result.turn_score" = "Очки за хід";
 "alias.game.result.continue" = "Продовжити";
 "alias.game.over.title" = "%@ перемагає";
-"alias.game.over.rematch" = "Реванш";
+"alias.game.over.final_score" = "Фінальний рахунок";
+"alias.game.over.final_time" = "Фінальний час";
+"alias.game.over.rematch" = "Зіграти ще";
+"alias.game.over.main_menu" = "Головне меню";
 "alias.game.deck_error.title" = "Слова недоступні";
 "alias.game.deck_error.message" = "Не вдалося завантажити офлайн-колоду слів.";
 "alias.game.goal" = "Мета";

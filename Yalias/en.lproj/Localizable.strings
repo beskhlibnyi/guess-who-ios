@@ -72,7 +72,10 @@
 "alias.game.result.turn_score" = "Turn score";
 "alias.game.result.continue" = "Continue";
 "alias.game.over.title" = "%@ wins";
-"alias.game.over.rematch" = "Rematch";
+"alias.game.over.final_score" = "Final score";
+"alias.game.over.final_time" = "Final time";
+"alias.game.over.rematch" = "Play again";
+"alias.game.over.main_menu" = "Main menu";
 "alias.game.deck_error.title" = "Words unavailable";
 "alias.game.deck_error.message" = "The offline word deck could not be loaded.";
 "alias.game.goal" = "Goal";
