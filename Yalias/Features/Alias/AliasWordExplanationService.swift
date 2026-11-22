@@ -1,7 +1,10 @@
 import Foundation
+import SQLite3
 
 /// Direct API access for personal builds configured through Secrets.xcconfig.
 struct AliasWordExplanationService {
+    private static let promptVersion = 1
+
     enum LookupError: Error {
         case missingKey
         case unauthorized
@@ -35,6 +38,14 @@ struct AliasWordExplanationService {
     }
 
     func explanation(for word: String) async throws -> String {
+        if let cached = AliasWordExplanationCache.explanation(
+            for: word,
+            model: model,
+            promptVersion: Self.promptVersion
+        ) {
+            return cached
+        }
+
         guard !apiKey.isEmpty, !apiKey.contains("$("), !apiKey.contains("\n"), !apiKey.contains("\r") else {
             throw LookupError.missingKey
         }
@@ -67,6 +78,12 @@ struct AliasWordExplanationService {
             .joined(separator: "\n\n")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { throw LookupError.invalidResponse }
+        AliasWordExplanationCache.store(
+            text,
+            for: word,
+            model: model,
+            promptVersion: Self.promptVersion
+        )
         return text
     }
 
@@ -104,5 +121,118 @@ struct AliasWordExplanationService {
             let type: String
             let text: String?
         }
+    }
+}
+
+private enum AliasWordExplanationCache {
+    private static let sqliteTransient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
+
+    static func explanation(for word: String, model: String, promptVersion: Int) -> String? {
+        guard let database = openDatabase() else { return nil }
+        defer { sqlite3_close(database) }
+
+        let sql = """
+            SELECT explanation
+            FROM explanations
+            WHERE word_key = ? AND model = ? AND prompt_version = ?
+            LIMIT 1
+            """
+        var statement: OpaquePointer?
+        guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK,
+              let statement else { return nil }
+        defer { sqlite3_finalize(statement) }
+
+        bind(normalizedWord(word), to: statement, index: 1)
+        bind(model, to: statement, index: 2)
+        sqlite3_bind_int(statement, 3, Int32(promptVersion))
+
+        guard sqlite3_step(statement) == SQLITE_ROW,
+              let value = sqlite3_column_text(statement, 0) else { return nil }
+        let explanation = String(cString: value)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return explanation.isEmpty ? nil : explanation
+    }
+
+    static func store(
+        _ explanation: String,
+        for word: String,
+        model: String,
+        promptVersion: Int
+    ) {
+        guard let database = openDatabase() else { return }
+        defer { sqlite3_close(database) }
+
+        let sql = """
+            INSERT OR REPLACE INTO explanations
+                (word_key, model, prompt_version, explanation, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            """
+        var statement: OpaquePointer?
+        guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK,
+              let statement else { return }
+        defer { sqlite3_finalize(statement) }
+
+        bind(normalizedWord(word), to: statement, index: 1)
+        bind(model, to: statement, index: 2)
+        sqlite3_bind_int(statement, 3, Int32(promptVersion))
+        bind(explanation, to: statement, index: 4)
+        sqlite3_bind_double(statement, 5, Date().timeIntervalSince1970)
+        sqlite3_step(statement)
+    }
+
+    private static func openDatabase() -> OpaquePointer? {
+        guard let databaseURL else { return nil }
+
+        var database: OpaquePointer?
+        let flags = SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX
+        guard sqlite3_open_v2(databaseURL.path, &database, flags, nil) == SQLITE_OK,
+              let database else {
+            if let database { sqlite3_close(database) }
+            return nil
+        }
+
+        let sql = """
+            CREATE TABLE IF NOT EXISTS explanations (
+                word_key TEXT NOT NULL,
+                model TEXT NOT NULL,
+                prompt_version INTEGER NOT NULL,
+                explanation TEXT NOT NULL,
+                updated_at REAL NOT NULL,
+                PRIMARY KEY (word_key, model, prompt_version)
+            )
+            """
+        guard sqlite3_exec(database, sql, nil, nil, nil) == SQLITE_OK else {
+            sqlite3_close(database)
+            return nil
+        }
+        return database
+    }
+
+    private static var databaseURL: URL? {
+        let fileManager = FileManager.default
+        guard let applicationSupportURL = try? fileManager.url(
+            for: .applicationSupportDirectory,
+            in: .userDomainMask,
+            appropriateFor: nil,
+            create: true
+        ) else { return nil }
+
+        let directoryURL = applicationSupportURL
+            .appendingPathComponent("AliasWordExplanations", isDirectory: true)
+        do {
+            try fileManager.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+            return directoryURL.appendingPathComponent("explanations.sqlite")
+        } catch {
+            return nil
+        }
+    }
+
+    private static func normalizedWord(_ word: String) -> String {
+        word.trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased(with: Locale(identifier: "uk_UA"))
+    }
+
+    private static func bind(_ value: String, to statement: OpaquePointer, index: Int32) {
+        sqlite3_bind_text(statement, index, value, -1, sqliteTransient)
     }
 }

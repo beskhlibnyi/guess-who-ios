@@ -117,6 +117,7 @@
 "alias.explanation.action" = "Пояснити слово";
 "alias.explanation.title" = "Значення слова";
 "alias.explanation.loading" = "Шукаємо пояснення…";
+"alias.explanation.resume_countdown" = "Гра продовжиться через %d с";
 "alias.explanation.retry" = "Спробувати ще раз";
 "alias.explanation.note" = "Пояснення українською, створене ШІ. Може містити помилки.";
 "alias.explanation.missing_key" = "Пояснення слів не налаштовано для цієї збірки застосунку.";

@@ -47,7 +47,7 @@ struct AliasGameplayScreen: View {
                 isCompletingSwipe = false
             }
         }
-        .sheet(item: $explanationWord) { word in
+        .sheet(item: $explanationWord, onDismiss: resumeAfterExplanation) { word in
             AliasWordExplanationSheet(word: word.text)
         }
         .alert(
@@ -1038,9 +1038,7 @@ struct AliasGameplayScreen: View {
             .buttonStyle(.plain)
             .accessibilityLabel(copy("alias.game.pause", fallback: "Pause"))
 
-            Button {
-                explanationWord = aliasGameState.currentWord
-            } label: {
+            Button(action: openWordExplanation) {
                 gameplayControlIcon("book.closed")
             }
             .buttonStyle(.plain)
@@ -1130,6 +1128,18 @@ struct AliasGameplayScreen: View {
         wordDragOffset = 0
         isCompletingSwipe = false
         aliasGameState.pause()
+    }
+
+    private func openWordExplanation() {
+        guard let currentWord = aliasGameState.currentWord else { return }
+        wordDragOffset = 0
+        isCompletingSwipe = false
+        aliasGameState.pause()
+        explanationWord = currentWord
+    }
+
+    private func resumeAfterExplanation() {
+        aliasGameState.resumeTurn()
     }
 
     private func returnToMenu() {

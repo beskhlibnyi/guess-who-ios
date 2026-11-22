@@ -103,6 +103,7 @@ enum AliasLocalizationCatalog {
         "alias.explanation.action": AliasLocalizedString("alias.explanation.action", defaultValue: "Explain word"),
         "alias.explanation.title": AliasLocalizedString("alias.explanation.title", defaultValue: "Word meaning"),
         "alias.explanation.loading": AliasLocalizedString("alias.explanation.loading", defaultValue: "Finding an explanation…"),
+        "alias.explanation.resume_countdown": AliasLocalizedString("alias.explanation.resume_countdown", defaultValue: "Game resumes in %d sec"),
         "alias.explanation.retry": AliasLocalizedString("alias.explanation.retry", defaultValue: "Try again"),
         "alias.explanation.note": AliasLocalizedString("alias.explanation.note", defaultValue: "AI-generated explanation in Ukrainian. It may contain mistakes."),
         "alias.explanation.missing_key": AliasLocalizedString("alias.explanation.missing_key", defaultValue: "Word explanations are not configured for this app build."),

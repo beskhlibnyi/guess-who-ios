@@ -117,6 +117,7 @@
 "alias.explanation.action" = "Explain word";
 "alias.explanation.title" = "Word meaning";
 "alias.explanation.loading" = "Finding an explanation…";
+"alias.explanation.resume_countdown" = "Game resumes in %d sec";
 "alias.explanation.retry" = "Try again";
 "alias.explanation.note" = "AI-generated explanation in Ukrainian. It may contain mistakes.";
 "alias.explanation.missing_key" = "Word explanations are not configured for this app build.";
