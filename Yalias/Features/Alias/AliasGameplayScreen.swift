@@ -13,6 +13,8 @@ struct AliasGameplayScreen: View {
     @State private var reviewScrollOffset: CGFloat = 0
     @State private var reviewContentHeight: CGFloat = 0
     @State private var reviewViewportHeight: CGFloat = 0
+    @State private var showsLoadingIndicator = false
+    @State private var loadingShufflePhase = false
 
     private let timer = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
     private let swipeCompletionDistance: CGFloat = 120
@@ -71,13 +73,77 @@ struct AliasGameplayScreen: View {
     }
 
     private var loadingState: some View {
-        messageScreen(
-            icon: "text.book.closed.fill",
-            title: copy("alias.game.loading.title", fallback: "Shuffling words"),
-            message: copy("alias.game.loading.message", fallback: "Preparing the offline deck…")
-        ) {
-            ProgressView().tint(StudioTheme.teal)
+        ZStack {
+            YaliasPaperBackgroundView()
+
+            if showsLoadingIndicator {
+                VStack(spacing: 18) {
+                    loadingCardStack
+
+                    Text(copy("alias.game.loading.title", fallback: "Shuffling words") + "…")
+                        .font(StudioTypography.paperControl)
+                        .foregroundStyle(StudioTheme.paperInk)
+                        .multilineTextAlignment(.center)
+                }
+                .transition(.opacity)
+            }
         }
+        .task {
+            var transaction = Transaction(animation: nil)
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                showsLoadingIndicator = false
+                loadingShufflePhase = false
+            }
+
+            do {
+                try await Task.sleep(for: .milliseconds(200))
+            } catch {
+                return
+            }
+            guard case .loading = aliasGameState.phase else { return }
+
+            withAnimation(.easeOut(duration: 0.16)) {
+                showsLoadingIndicator = true
+            }
+            withAnimation(.easeInOut(duration: 0.52).repeatForever(autoreverses: true)) {
+                loadingShufflePhase = true
+            }
+        }
+    }
+
+    private var loadingCardStack: some View {
+        ZStack {
+            loadingCard(color: StudioTheme.sky)
+                .rotationEffect(.degrees(loadingShufflePhase ? 8 : 4))
+                .offset(x: loadingShufflePhase ? 12 : 8, y: -7)
+
+            loadingCard(color: StudioTheme.olive)
+                .rotationEffect(.degrees(loadingShufflePhase ? -8 : -4))
+                .offset(x: loadingShufflePhase ? -12 : -8, y: 1)
+
+            loadingCard(color: StudioTheme.paperHighlight)
+                .overlay(alignment: .top) {
+                    TornPaperShape()
+                        .fill(StudioTheme.mustard)
+                        .frame(height: 11)
+                }
+                .rotationEffect(.degrees(loadingShufflePhase ? 1.5 : -1.5))
+                .offset(y: loadingShufflePhase ? 4 : 0)
+        }
+        .frame(width: 116, height: 84)
+        .shadow(color: StudioTheme.paperInk.opacity(0.12), radius: 4, x: 1, y: 3)
+        .accessibilityHidden(true)
+    }
+
+    private func loadingCard(color: Color) -> some View {
+        TornPaperShape()
+            .fill(color)
+            .frame(width: 86, height: 58)
+            .overlay {
+                TornPaperShape()
+                    .stroke(StudioTheme.paperInk, lineWidth: 1.5)
+            }
     }
 
     private func handoffState(_ player: AliasPlayer) -> some View {
