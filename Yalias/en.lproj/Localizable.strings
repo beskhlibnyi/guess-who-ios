@@ -1,4 +1,5 @@
 "common.cancel" = "Cancel";
+"common.done" = "Done";
 "player.one" = "Player 1";
 "player.two" = "Player 2";
 "settings.language.label" = "Language";
@@ -7,8 +8,7 @@
 "settings.title" = "Settings";
 "settings.open" = "Open settings";
 "settings.close" = "Close settings";
-"settings.players.title" = "Player names";
-"settings.players.message" = "These names appear everywhere in the round flow.";
+"settings.players.title" = "Players";
 "settings.player.placeholder" = "Enter a name";
 "app.title" = "YALIAS";
 "alias.vocabulary_review.title" = "Review words";

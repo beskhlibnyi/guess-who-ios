@@ -38,8 +38,7 @@ struct AliasHomeScreen: View {
                 languageOverride: $languageOverride,
                 playerOneName: $playerOneName,
                 playerTwoName: $playerTwoName,
-                isPresented: $showsSettings,
-                showsRail: false
+                isPresented: $showsSettings
             )
         }
         .alert(copy("alias.menu.alert.title", fallback: "Start a new match?"), isPresented: $showsNewMatchConfirmation) {

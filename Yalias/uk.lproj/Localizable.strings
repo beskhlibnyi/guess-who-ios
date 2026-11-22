@@ -1,4 +1,5 @@
 "common.cancel" = "Скасувати";
+"common.done" = "Готово";
 "player.one" = "Гравець 1";
 "player.two" = "Гравець 2";
 "settings.language.label" = "Мова";
@@ -7,8 +8,7 @@
 "settings.title" = "Налаштування";
 "settings.open" = "Відкрити налаштування";
 "settings.close" = "Закрити налаштування";
-"settings.players.title" = "Імена гравців";
-"settings.players.message" = "Ці імена використовуються в усьому ігровому процесі.";
+"settings.players.title" = "Гравці";
 "settings.player.placeholder" = "Введіть ім'я";
 "app.title" = "ЯЛІАС";
 "alias.vocabulary_review.title" = "Перевірити слова";
