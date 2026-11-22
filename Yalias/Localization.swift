@@ -158,6 +158,8 @@ enum AliasLocalizationCatalog {
         "alias.game.skip": AliasLocalizedString("alias.game.skip", defaultValue: "Skip −1"),
         "alias.game.correct": AliasLocalizedString("alias.game.correct", defaultValue: "Correct +1"),
         "alias.game.swipe.hint": AliasLocalizedString("alias.game.swipe.hint", defaultValue: "Swipe up if guessed or down to skip."),
+        "alias.game.stack.guessed": AliasLocalizedString("alias.game.stack.guessed", defaultValue: "Guessed!"),
+        "alias.game.stack.skip": AliasLocalizedString("alias.game.stack.skip", defaultValue: "Skip"),
         "alias.game.exclude": AliasLocalizedString("alias.game.exclude", defaultValue: "Exclude word"),
         "alias.game.exclude.error.title": AliasLocalizedString("alias.game.exclude.error.title", defaultValue: "Couldn’t update word"),
         "alias.game.exclude.error.message": AliasLocalizedString("alias.game.exclude.error.message", defaultValue: "The word was not updated. Please try again."),

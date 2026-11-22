@@ -38,6 +38,8 @@
 "alias.game.skip" = "Skip −1";
 "alias.game.correct" = "Correct +1";
 "alias.game.swipe.hint" = "Swipe up if guessed or down to skip.";
+"alias.game.stack.guessed" = "Guessed!";
+"alias.game.stack.skip" = "Skip";
 "alias.game.exclude" = "Exclude word";
 "alias.game.exclude.error.title" = "Couldn’t update word";
 "alias.game.exclude.error.message" = "The word was not updated. Please try again.";

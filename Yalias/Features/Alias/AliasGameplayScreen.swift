@@ -12,6 +12,7 @@ struct AliasGameplayScreen: View {
     @State private var showsExclusionError = false
 
     private let timer = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
+    private let swipeCompletionDistance: CGFloat = 120
 
     var body: some View {
         Group {
@@ -202,58 +203,98 @@ struct AliasGameplayScreen: View {
     }
 
     private func playingState(_: AliasPlayer) -> some View {
-        VStack(spacing: 16) {
-            if aliasGameState.isPaused {
-                pausedControls
-            } else {
-                liveControls
+        ZStack {
+            YaliasPaperBackgroundView()
+
+            VStack(spacing: 0) {
+                if aliasGameState.isPaused {
+                    pausedControls
+                    Spacer().frame(height: 14)
+                    scoreBoard
+                    Spacer(minLength: 16)
+                    pausedContent
+                    Spacer(minLength: 16)
+                } else {
+                    Spacer().frame(height: 12)
+                    playingScoreBoard
+                    Spacer().frame(height: 60)
+                    swipeableWordCard
+                    Spacer(minLength: 12)
+                    liveControls
+                }
             }
-            scoreBoard
-
-            Spacer(minLength: 16)
-
-            if aliasGameState.isPaused {
-                pausedContent
-            } else {
-                swipeableWordCard
-            }
-
-            Spacer(minLength: 16)
+            .padding(.horizontal, 16)
+            .padding(.top, 10)
+            .padding(.bottom, 12)
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 20)
-        .padding(.bottom, 20)
     }
 
     private var swipeableWordCard: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .fill(wordCardColor)
+        GeometryReader { geometry in
+            let cardWidth = min(geometry.size.width - 8, 360)
+            let cardHeight: CGFloat = 240
+            let centerX = geometry.size.width * 0.5
 
-            Text(aliasGameState.currentWord?.text ?? "—")
-                .font(.system(size: 44, weight: .black, design: .rounded))
-                .foregroundStyle(StudioTheme.ink)
-                .minimumScaleFactor(0.5)
-                .lineLimit(2)
-                .multilineTextAlignment(.center)
-                .padding(28)
+            ZStack(alignment: .topLeading) {
+                swipeActionTab(
+                    color: StudioTheme.olive,
+                    systemImage: "arrow.up",
+                    title: copy("alias.game.stack.guessed", fallback: "Guessed!")
+                )
+                .frame(width: cardWidth * 0.52, height: 110)
+                .position(x: centerX, y: 55)
 
-            if abs(wordDragOffset) > 18 {
-                Image(systemName: wordDragOffset < 0 ? "checkmark.circle.fill" : "minus.circle.fill")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundStyle(wordDragOffset < 0 ? StudioTheme.teal : StudioTheme.coral)
-                    .frame(maxHeight: .infinity, alignment: wordDragOffset < 0 ? .bottom : .top)
-                    .padding(20)
-                    .transition(.opacity)
+                swipeActionTab(
+                    color: StudioTheme.vermilion,
+                    systemImage: "arrow.down",
+                    title: copy("alias.game.stack.skip", fallback: "Skip")
+                )
+                .frame(width: cardWidth * 0.54, height: 110)
+                .position(x: centerX, y: 335)
+
+                stackedPaperCard(color: StudioTheme.mustard)
+                    .frame(width: cardWidth, height: cardHeight)
+                    .rotationEffect(.degrees(-1.8))
+                    .position(x: centerX - 6, y: 194)
+
+                stackedPaperCard(color: StudioTheme.sky)
+                    .frame(width: cardWidth, height: cardHeight)
+                    .rotationEffect(.degrees(1.7))
+                    .position(x: centerX + 6, y: 195)
+
+                stackedPaperCard(color: StudioTheme.olive)
+                    .frame(width: cardWidth, height: cardHeight)
+                    .rotationEffect(.degrees(0.6))
+                    .position(x: centerX + 2, y: 198)
+
+                ZStack {
+                    TornPaperShape()
+                        .fill(wordCardColor)
+
+                    Text(aliasGameState.currentWord?.text.uppercased() ?? "—")
+                        .font(.system(size: 43, weight: .black, design: .rounded))
+                        .foregroundStyle(StudioTheme.paperInk)
+                        .minimumScaleFactor(0.43)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .padding(28)
+                }
+                .frame(width: cardWidth, height: cardHeight)
+                .overlay {
+                    TornPaperShape()
+                        .stroke(wordCardBorderColor, lineWidth: 1.8)
+                }
+                .shadow(color: StudioTheme.paperInk.opacity(0.14), radius: 5, x: 1, y: 4)
+                .rotationEffect(.degrees(-0.7 + Double(wordDragOffset / 80)))
+                .position(x: centerX, y: 190)
+                .offset(y: wordDragOffset)
+                .opacity(isCompletingSwipe ? 0.92 : 1)
             }
+            .frame(width: geometry.size.width, height: 400)
+            .contentShape(Rectangle())
+            .highPriorityGesture(wordSwipeGesture)
         }
-        .frame(maxWidth: .infinity, minHeight: 320)
-        .overlay {
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(wordCardBorderColor, lineWidth: abs(wordDragOffset) > 18 ? 2 : 1)
-        }
-        .offset(y: wordDragOffset)
-        .highPriorityGesture(wordSwipeGesture)
+        .frame(height: 400)
         .accessibilityAddTraits(.isButton)
         .accessibilityHint(copy("alias.game.swipe.hint", fallback: "Swipe up if guessed or down to skip."))
         .accessibilityAction(named: Text(copy("alias.game.correct", fallback: "Correct +1"))) {
@@ -265,20 +306,61 @@ struct AliasGameplayScreen: View {
     }
 
     private var wordCardColor: Color {
-        guard abs(wordDragOffset) > 18 else { return StudioTheme.card }
-        return (wordDragOffset < 0 ? StudioTheme.teal : StudioTheme.coral).opacity(0.1)
+        StudioTheme.paperHighlight
     }
 
     private var wordCardBorderColor: Color {
-        guard abs(wordDragOffset) > 18 else { return StudioTheme.line.opacity(0.55) }
-        return (wordDragOffset < 0 ? StudioTheme.teal : StudioTheme.coral).opacity(0.55)
+        StudioTheme.paperInk.opacity(abs(wordDragOffset) > 18 ? 0.82 : 0.60)
+    }
+
+    private func stackedPaperCard(color: Color) -> some View {
+        TornPaperShape()
+            .fill(color)
+            .overlay {
+                TornPaperShape()
+                    .stroke(StudioTheme.paperInk.opacity(0.48), lineWidth: 1.35)
+            }
+            .shadow(color: StudioTheme.paperInk.opacity(0.09), radius: 3, x: 1, y: 2)
+    }
+
+    private func swipeActionTab(
+        color: Color,
+        systemImage: String,
+        title: String
+    ) -> some View {
+        let pointsUp = systemImage == "arrow.up"
+
+        return VStack(spacing: 2) {
+            if pointsUp {
+                Image(systemName: systemImage)
+                    .font(.system(size: 20, weight: .black))
+                Text(title)
+                    .font(StudioTypography.subheadline.weight(.bold))
+            } else {
+                Text(title)
+                    .font(StudioTypography.subheadline.weight(.bold))
+                Image(systemName: systemImage)
+                    .font(.system(size: 20, weight: .black))
+            }
+        }
+        .foregroundStyle(StudioTheme.paperHighlight)
+        .padding(.top, pointsUp ? 8 : 42)
+        .frame(
+            maxWidth: .infinity,
+            maxHeight: .infinity,
+            alignment: .top
+        )
+        .background {
+            SwipeActionTabShape(pointsUp: pointsUp)
+                .fill(color)
+        }
+        .shadow(color: StudioTheme.paperInk.opacity(0.10), radius: 3, x: 1, y: 2)
     }
 
     private var wordSwipeGesture: some Gesture {
         DragGesture(minimumDistance: 8)
             .onChanged { value in
-                guard !isCompletingSwipe,
-                      abs(value.translation.height) > abs(value.translation.width) else { return }
+                guard !isCompletingSwipe else { return }
                 var transaction = Transaction(animation: nil)
                 transaction.disablesAnimations = true
                 withTransaction(transaction) {
@@ -290,9 +372,9 @@ struct AliasGameplayScreen: View {
                 let translation = value.translation.height
                 let isVertical = abs(translation) > abs(value.translation.width)
 
-                if isVertical, translation <= -64 {
+                if isVertical, translation <= -swipeCompletionDistance {
                     completeSwipe(isCorrect: true)
-                } else if isVertical, translation >= 64 {
+                } else if isVertical, translation >= swipeCompletionDistance {
                     completeSwipe(isCorrect: false)
                 } else {
                     withAnimation(.snappy) {
@@ -504,6 +586,58 @@ struct AliasGameplayScreen: View {
         .background(StudioTheme.card.opacity(0.66), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 
+    private var playingScoreBoard: some View {
+        HStack(alignment: .center, spacing: 8) {
+            playingScoreTile(.one, labelColor: StudioTheme.olive)
+
+            Text(timeText)
+                .font(.system(size: 38, weight: .black, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(StudioTheme.paperInk)
+                .minimumScaleFactor(0.72)
+                .lineLimit(1)
+                .frame(width: 132, height: 86)
+                .background(TornPaperShape().fill(StudioTheme.mustard))
+                .overlay {
+                    TornPaperShape()
+                        .stroke(StudioTheme.paperInk, lineWidth: 2)
+                }
+                .shadow(color: StudioTheme.paperInk.opacity(0.12), radius: 4, x: 1, y: 3)
+                .accessibilityLabel(timerAccessibilityLabel)
+
+            playingScoreTile(.two, labelColor: StudioTheme.sky)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func playingScoreTile(_ player: AliasPlayer, labelColor: Color) -> some View {
+        VStack(spacing: -22) {
+            Text(playerName(player))
+                .font(StudioTypography.footnote.weight(.bold))
+                .foregroundStyle(StudioTheme.paperHighlight)
+                .lineLimit(1)
+                .minimumScaleFactor(0.64)
+                .frame(maxWidth: .infinity, minHeight: 42)
+                .padding(.horizontal, 6)
+                .background(TornPaperShape().fill(labelColor))
+                .offset(y: -4)
+                .zIndex(2)
+
+            Text(String(aliasGameState.score(for: player)))
+                .font(.system(size: 39, weight: .black, design: .rounded))
+                .foregroundStyle(StudioTheme.paperInk)
+                .monospacedDigit()
+                .frame(maxWidth: .infinity, minHeight: 58)
+                .background(TornPaperShape().fill(StudioTheme.paperHighlight))
+                .overlay {
+                    TornPaperShape()
+                        .stroke(StudioTheme.paperInk, lineWidth: 2)
+                }
+        }
+        .frame(maxWidth: .infinity)
+        .shadow(color: StudioTheme.paperInk.opacity(0.10), radius: 3, x: 1, y: 2)
+    }
+
     private func scoreTile(_ player: AliasPlayer, accent: Color) -> some View {
         HStack(spacing: 8) {
             if player == .two {
@@ -540,21 +674,9 @@ struct AliasGameplayScreen: View {
     }
 
     private var liveControls: some View {
-        HStack(spacing: 12) {
-            Text(timeText)
-                .font(.system(size: 32, weight: .black, design: .rounded))
-                .monospacedDigit()
-                .foregroundStyle(timerColor)
-                .accessibilityLabel(timerAccessibilityLabel)
-
-            Spacer()
-
+        HStack(spacing: 18) {
             Button(action: pauseTurn) {
-                Image(systemName: "pause.fill")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(StudioTheme.inkSoft)
-                    .frame(width: 40, height: 40)
-                    .background(StudioTheme.card.opacity(0.74), in: Circle())
+                gameplayControlIcon("pause.fill")
             }
             .buttonStyle(.plain)
             .accessibilityLabel(copy("alias.game.pause", fallback: "Pause"))
@@ -562,37 +684,38 @@ struct AliasGameplayScreen: View {
             Button {
                 explanationWord = aliasGameState.currentWord
             } label: {
-                Image(systemName: "book.closed")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(StudioTheme.teal)
-                    .frame(width: 40, height: 40)
-                    .background(StudioTheme.teal.opacity(0.1), in: Circle())
+                gameplayControlIcon("book.closed")
             }
             .buttonStyle(.plain)
             .disabled(aliasGameState.currentWord == nil)
             .accessibilityLabel(copy("alias.explanation.action", fallback: "Explain word"))
 
             Button(action: excludeCurrentWord) {
-                Image(systemName: "rectangle.badge.minus")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(StudioTheme.coral)
-                    .frame(width: 40, height: 40)
-                    .background(StudioTheme.coral.opacity(0.1), in: Circle())
+                gameplayControlIcon("nosign")
             }
             .buttonStyle(.plain)
             .disabled(aliasGameState.currentWord == nil)
             .accessibilityLabel(copy("alias.game.exclude", fallback: "Exclude word"))
 
             Button(action: returnToMenu) {
-                Image(systemName: "rectangle.portrait.and.arrow.right")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(StudioTheme.inkSoft)
-                    .frame(width: 40, height: 40)
-                    .background(StudioTheme.card.opacity(0.74), in: Circle())
+                gameplayControlIcon("line.3.horizontal")
             }
             .buttonStyle(.plain)
             .accessibilityLabel(copy("common.menu", fallback: "Menu"))
         }
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    private func gameplayControlIcon(_ systemName: String) -> some View {
+        Image(systemName: systemName)
+            .font(.system(size: 20, weight: .black))
+            .foregroundStyle(StudioTheme.paperInk)
+            .frame(width: 50, height: 50)
+            .background(StudioTheme.paperHighlight, in: Circle())
+            .overlay {
+                Circle().stroke(StudioTheme.paperInk, lineWidth: 2)
+            }
+            .shadow(color: StudioTheme.paperInk.opacity(0.11), radius: 3, x: 1, y: 2)
     }
 
     private var pausedControls: some View {
@@ -737,7 +860,7 @@ struct AliasGameplayScreen: View {
         case .classic:
             return formatDuration(TimeInterval(aliasGameState.secondsRemaining), showsTenths: false)
         case .fastest:
-            return formatDuration(aliasGameState.elapsedTime)
+            return formatDuration(aliasGameState.elapsedTime, showsTenths: false)
         }
     }
 
@@ -800,7 +923,7 @@ struct AliasGameplayScreen: View {
         }
     }
 
-    private func formatDuration(_ duration: TimeInterval, showsTenths: Bool = true) -> String {
+    private func formatDuration(_ duration: TimeInterval, showsTenths: Bool = false) -> String {
         let clampedDuration = max(0, duration)
         let minutes = Int(clampedDuration) / 60
         let seconds = Int(clampedDuration) % 60
@@ -830,5 +953,53 @@ struct AliasGameplayScreen: View {
 
     private func copy(_ key: String, fallback: String, _ value: CVarArg) -> String {
         aliasLocalizedFormat(key, fallback: fallback, value)
+    }
+}
+
+private struct SwipeActionTabShape: Shape {
+    let pointsUp: Bool
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let left = rect.minX + 5
+        let right = rect.maxX - 5
+        let top = rect.minY + 4
+        let bottom = rect.maxY - 4
+
+        if pointsUp {
+            path.move(to: CGPoint(x: left, y: bottom - 3))
+            path.addLine(to: CGPoint(x: left + 1, y: rect.midY + 4))
+            path.addLine(to: CGPoint(x: left + 16, y: rect.midY - 5))
+            path.addQuadCurve(
+                to: CGPoint(x: rect.midX, y: top),
+                control: CGPoint(x: rect.midX - 34, y: top + 24)
+            )
+            path.addQuadCurve(
+                to: CGPoint(x: right - 15, y: rect.midY - 3),
+                control: CGPoint(x: rect.midX + 35, y: top + 24)
+            )
+            path.addLine(to: CGPoint(x: right, y: rect.midY + 5))
+            path.addLine(to: CGPoint(x: right - 2, y: bottom - 1))
+            path.addLine(to: CGPoint(x: rect.midX + 30, y: bottom - 4))
+            path.addLine(to: CGPoint(x: rect.midX - 22, y: bottom))
+        } else {
+            path.move(to: CGPoint(x: left, y: top + 3))
+            path.addLine(to: CGPoint(x: rect.midX - 28, y: top))
+            path.addLine(to: CGPoint(x: right, y: top + 4))
+            path.addLine(to: CGPoint(x: right - 1, y: rect.midY - 4))
+            path.addLine(to: CGPoint(x: right - 16, y: rect.midY + 5))
+            path.addQuadCurve(
+                to: CGPoint(x: rect.midX, y: bottom),
+                control: CGPoint(x: rect.midX + 34, y: bottom - 24)
+            )
+            path.addQuadCurve(
+                to: CGPoint(x: left + 15, y: rect.midY + 5),
+                control: CGPoint(x: rect.midX - 35, y: bottom - 24)
+            )
+            path.addLine(to: CGPoint(x: left, y: rect.midY - 4))
+        }
+
+        path.closeSubpath()
+        return path
     }
 }

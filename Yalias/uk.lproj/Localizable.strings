@@ -38,6 +38,8 @@
 "alias.game.skip" = "Пропустити −1";
 "alias.game.correct" = "Вгадано +1";
 "alias.game.swipe.hint" = "Проведіть угору, якщо слово вгадано, або вниз, щоб пропустити.";
+"alias.game.stack.guessed" = "Вгадано!";
+"alias.game.stack.skip" = "Пропустити";
 "alias.game.exclude" = "Виключити слово";
 "alias.game.exclude.error.title" = "Не вдалося оновити слово";
 "alias.game.exclude.error.message" = "Стан слова не змінено. Спробуйте ще раз.";
