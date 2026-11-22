@@ -10,6 +10,9 @@ struct AliasGameplayScreen: View {
     @State private var wordDragOffset: CGFloat = 0
     @State private var isCompletingSwipe = false
     @State private var showsExclusionError = false
+    @State private var reviewScrollOffset: CGFloat = 0
+    @State private var reviewContentHeight: CGFloat = 0
+    @State private var reviewViewportHeight: CGFloat = 0
 
     private let timer = Timer.publish(every: 0.25, on: .main, in: .common).autoconnect()
     private let swipeCompletionDistance: CGFloat = 120
@@ -401,71 +404,251 @@ struct AliasGameplayScreen: View {
     }
 
     private func turnResultState(_ player: AliasPlayer) -> some View {
-        contentScreen {
-            header(
-                title: turnResultTitle(for: player),
-                subtitle: turnResultSubtitle(for: player)
-            )
-            scoreBoard
-            card {
-                VStack(spacing: 16) {
-                    resultRow(copy("alias.game.result.correct", fallback: "Correct"), value: aliasGameState.correctCount, color: StudioTheme.teal)
-                    resultRow(copy("alias.game.result.skipped", fallback: "Skipped"), value: aliasGameState.skippedCount, color: StudioTheme.coral)
-                    resultRow(copy("alias.game.result.declined", fallback: "Declined"), value: aliasGameState.declinedCount, color: StudioTheme.gold)
-                    Divider()
-                    HStack {
-                        Text(
-                            aliasGameState.configuration.mode == .classic
-                                ? copy("alias.game.result.turn_score", fallback: "Turn score")
-                                : copy("alias.game.result.time", fallback: "Time")
-                        )
-                        Spacer()
-                        Text(turnResultValue(for: player))
-                    }
-                    .font(StudioTypography.title)
-                    .foregroundStyle(StudioTheme.ink)
-                }
-            }
+        ZStack {
+            YaliasPaperBackgroundView()
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text(copy("alias.game.review.title", fallback: "Review words"))
-                    .font(StudioTypography.title)
-                    .foregroundStyle(StudioTheme.ink)
-                Text(copy("alias.game.review.message", fallback: "Tap a result to correct the score before continuing."))
-                    .font(StudioTypography.body)
-                    .foregroundStyle(StudioTheme.muted)
-                    .fixedSize(horizontal: false, vertical: true)
+            VStack(spacing: 14) {
+                turnResultHeader(player)
+                turnReviewPanel
+                    .frame(maxHeight: 490)
+
+                Spacer(minLength: 0)
+
+                Button(reviewContinueLabel, action: aliasGameState.continueAfterTurn)
+                    .buttonStyle(PaperActionButtonStyle(kind: .filled(StudioTheme.vermilion)))
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.top, 10)
+            .padding(.bottom, 24)
+        }
+    }
+
+    private func turnResultHeader(_ player: AliasPlayer) -> some View {
+        ZStack(alignment: .topLeading) {
+            Button(action: returnToMenu) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 19, weight: .black))
+                    .foregroundStyle(StudioTheme.paperInk)
+                    .frame(width: 44, height: 44)
+                    .background(StudioTheme.paperHighlight, in: Circle())
+                    .overlay { Circle().stroke(StudioTheme.paperInk, lineWidth: 1.8) }
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(copy("common.menu", fallback: "Menu"))
+
+            HStack(alignment: .bottom, spacing: 10) {
+                ZStack(alignment: .top) {
+                    Text(copy("alias.game.result.completed", fallback: "Turn complete"))
+                        .font(StudioTypography.paperTitle)
+                        .foregroundStyle(StudioTheme.paperInk)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.72)
+                        .frame(maxWidth: .infinity, minHeight: 66)
+                        .padding(.top, 8)
+                        .background(TornPaperShape().fill(StudioTheme.paperHighlight))
+                        .overlay {
+                            TornPaperShape()
+                                .stroke(StudioTheme.paperInk, lineWidth: 1.8)
+                        }
+
+                    Text(playerName(player))
+                        .font(StudioTypography.subheadline.weight(.bold))
+                        .foregroundStyle(StudioTheme.paperHighlight)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.68)
+                        .padding(.horizontal, 18)
+                        .frame(minWidth: 112, minHeight: 34)
+                        .background(TornPaperShape().fill(StudioTheme.olive))
+                        .offset(y: -13)
+                }
+                .padding(.top, 13)
+
+                Text(turnResultBadgeText(for: player))
+                    .font(StudioTypography.subheadline.weight(.bold))
+                    .foregroundStyle(StudioTheme.paperInk)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.68)
+                    .padding(.horizontal, 12)
+                    .frame(minWidth: 104, minHeight: 54)
+                    .background(TornPaperShape().fill(StudioTheme.mustard))
+                    .overlay {
+                        TornPaperShape()
+                            .stroke(StudioTheme.paperInk, lineWidth: 1.6)
+                    }
+                    .padding(.bottom, 1)
+            }
+            .padding(.leading, 54)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var turnReviewPanel: some View {
+        VStack(spacing: 10) {
+            Text(copy("alias.game.review.title", fallback: "Review words"))
+                .font(StudioTypography.paperTitle)
+                .foregroundStyle(StudioTheme.paperInk)
+
+            reviewLegend
+
+            Capsule()
+                .fill(StudioTheme.paperInk.opacity(0.48))
+                .frame(height: 1.5)
+                .padding(.horizontal, 6)
 
             if aliasGameState.turnWords.isEmpty {
                 Text(copy("alias.game.review.empty", fallback: "No words were completed this turn."))
                     .font(StudioTypography.body)
-                    .foregroundStyle(StudioTheme.muted)
-                    .frame(maxWidth: .infinity)
-                    .padding(24)
-                    .background(StudioTheme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .foregroundStyle(StudioTheme.paperInk.opacity(0.65))
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(20)
             } else {
-                LazyVStack(spacing: 10) {
-                    ForEach(aliasGameState.turnWords) { turnWord in
-                        turnWordReviewRow(turnWord)
+                ZStack(alignment: .trailing) {
+                    ScrollView(.vertical) {
+                        VStack(spacing: 8) {
+                            ForEach(aliasGameState.turnWords) { turnWord in
+                                turnWordReviewRow(turnWord)
+                            }
+                        }
+                        .padding(.horizontal, 2)
+                        .padding(.vertical, 2)
+                        .padding(.trailing, 20)
+                        .background {
+                            GeometryReader { proxy in
+                                Color.clear
+                                    .preference(
+                                        key: ReviewScrollOffsetPreferenceKey.self,
+                                        value: max(
+                                            0,
+                                            -proxy.frame(in: .named("turnReviewScroll")).minY
+                                        )
+                                    )
+                                    .preference(
+                                        key: ReviewContentHeightPreferenceKey.self,
+                                        value: proxy.size.height
+                                    )
+                            }
+                        }
+                    }
+                    .scrollIndicators(.hidden)
+                    .background {
+                        GeometryReader { proxy in
+                            Color.clear.preference(
+                                key: ReviewViewportHeightPreferenceKey.self,
+                                value: proxy.size.height
+                            )
+                        }
+                    }
+
+                    if reviewContentHeight > reviewViewportHeight + 1 {
+                        reviewScrollIndicator
+                            .padding(.vertical, 4)
+                            .padding(.trailing, 2)
                     }
                 }
+                .coordinateSpace(name: "turnReviewScroll")
+                .onPreferenceChange(ReviewScrollOffsetPreferenceKey.self) {
+                    reviewScrollOffset = $0
+                }
+                .onPreferenceChange(ReviewContentHeightPreferenceKey.self) {
+                    reviewContentHeight = $0
+                }
+                .onPreferenceChange(ReviewViewportHeightPreferenceKey.self) {
+                    reviewViewportHeight = $0
+                }
             }
-
-            Button(reviewContinueLabel, action: aliasGameState.continueAfterTurn)
-                .buttonStyle(ActionButtonStyle(kind: .filled(StudioTheme.coral)))
-            menuButton
         }
+        .padding(.horizontal, 14)
+        .padding(.top, 16)
+        .padding(.bottom, 12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background {
+            ZStack {
+                TornPaperShape()
+                    .fill(StudioTheme.mustard)
+                    .offset(x: -5, y: 5)
+                TornPaperShape()
+                    .fill(StudioTheme.sky)
+                    .offset(x: 5, y: 6)
+                TornPaperShape()
+                    .fill(StudioTheme.olive)
+                    .offset(y: 9)
+                TornPaperShape()
+                    .fill(StudioTheme.paperHighlight)
+            }
+        }
+        .overlay {
+            TornPaperShape()
+                .stroke(StudioTheme.paperInk.opacity(0.72), lineWidth: 1.5)
+        }
+        .shadow(color: StudioTheme.paperInk.opacity(0.11), radius: 5, x: 1, y: 4)
+    }
+
+    private var reviewScrollIndicator: some View {
+        GeometryReader { geometry in
+            let trackHeight = max(geometry.size.height, 1)
+            let visibleRatio = min(reviewViewportHeight / max(reviewContentHeight, 1), 1)
+            let thumbHeight = max(34, trackHeight * visibleRatio)
+            let thumbTravel = max(trackHeight - thumbHeight, 0)
+            let maxScrollOffset = max(reviewContentHeight - reviewViewportHeight, 1)
+            let progress = min(max(reviewScrollOffset / maxScrollOffset, 0), 1)
+
+            ZStack(alignment: .top) {
+                Capsule()
+                    .fill(StudioTheme.paperHighlight)
+                    .overlay {
+                        Capsule()
+                            .stroke(StudioTheme.paperInk, lineWidth: 1.4)
+                    }
+
+                Capsule()
+                    .fill(StudioTheme.olive)
+                    .frame(height: thumbHeight)
+                    .overlay {
+                        Capsule()
+                            .stroke(StudioTheme.paperInk, lineWidth: 1.2)
+                    }
+                    .offset(y: thumbTravel * progress)
+            }
+            .frame(width: 14)
+        }
+        .frame(width: 14)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private var reviewLegend: some View {
+        HStack(spacing: 6) {
+            ForEach(AliasGameState.WordOutcome.allCases) { outcome in
+                VStack(spacing: 3) {
+                    Image(systemName: reviewOutcomeSystemImage(outcome))
+                        .font(.system(size: 13, weight: .black))
+                        .foregroundStyle(reviewOutcomeForegroundColor(outcome))
+                        .frame(width: 28, height: 28)
+                        .background(reviewOutcomeColor(outcome), in: Circle())
+
+                    Text(reviewOutcomeLabel(outcome))
+                        .font(StudioTypography.compactLabel)
+                        .foregroundStyle(StudioTheme.paperInk)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.68)
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 7)
+        .background(TornPaperShape().fill(StudioTheme.mustard.opacity(0.18)))
     }
 
     private func turnWordReviewRow(_ turnWord: AliasGameState.TurnWord) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        HStack(spacing: 8) {
             Text(turnWord.word.text)
-                .font(StudioTypography.title)
-                .foregroundStyle(StudioTheme.ink)
-                .lineLimit(2)
-                .minimumScaleFactor(0.75)
+                .font(StudioTypography.subheadline.weight(.bold))
+                .foregroundStyle(StudioTheme.paperInk)
+                .lineLimit(1)
+                .minimumScaleFactor(0.52)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 8) {
                 ForEach(AliasGameState.WordOutcome.allCases) { outcome in
@@ -473,12 +656,13 @@ struct AliasGameplayScreen: View {
                 }
             }
         }
-        .padding(16)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 9)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(StudioTheme.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .background(StudioTheme.paper, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .stroke(StudioTheme.line.opacity(0.5))
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(StudioTheme.paperInk.opacity(0.68), lineWidth: 1.4)
         }
     }
 
@@ -494,16 +678,27 @@ struct AliasGameplayScreen: View {
                 showsExclusionError = true
             }
         } label: {
-            Text(reviewOutcomeLabel(outcome))
-                .font(StudioTypography.compactLabel)
-                .foregroundStyle(isSelected ? Color.white : color)
-                .lineLimit(1)
-                .minimumScaleFactor(0.72)
-                .frame(maxWidth: .infinity, minHeight: 38)
-                .background(isSelected ? color : color.opacity(0.1), in: Capsule())
+            Image(systemName: reviewOutcomeSystemImage(outcome))
+                .font(.system(size: 16, weight: .black))
+                .foregroundStyle(isSelected ? reviewOutcomeForegroundColor(outcome) : StudioTheme.paperInk)
+                .frame(width: 42, height: 42)
+                .background(isSelected ? color : StudioTheme.paperHighlight, in: Circle())
+                .overlay {
+                    Circle()
+                        .stroke(StudioTheme.paperInk, lineWidth: isSelected ? 1.4 : 1.8)
+                }
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(reviewOutcomeLabel(outcome))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private func reviewOutcomeSystemImage(_ outcome: AliasGameState.WordOutcome) -> String {
+        switch outcome {
+        case .guessed: return "checkmark"
+        case .skipped: return "arrow.down"
+        case .declined: return "nosign"
+        }
     }
 
     private func reviewOutcomeLabel(_ outcome: AliasGameState.WordOutcome) -> String {
@@ -513,19 +708,23 @@ struct AliasGameplayScreen: View {
         case .skipped:
             return copy("alias.game.review.skipped", fallback: "Skipped")
         case .declined:
-            return copy("alias.game.review.declined", fallback: "Declined")
+            return copy("alias.game.review.declined", fallback: "Excluded")
         }
     }
 
     private func reviewOutcomeColor(_ outcome: AliasGameState.WordOutcome) -> Color {
         switch outcome {
         case .guessed:
-            return StudioTheme.teal
+            return StudioTheme.olive
         case .skipped:
-            return StudioTheme.coral
+            return StudioTheme.vermilion
         case .declined:
-            return StudioTheme.gold
+            return StudioTheme.mustard
         }
+    }
+
+    private func reviewOutcomeForegroundColor(_ outcome: AliasGameState.WordOutcome) -> Color {
+        outcome == .declined ? StudioTheme.paperInk : StudioTheme.paperHighlight
     }
 
     private var reviewContinueLabel: String {
@@ -799,16 +998,6 @@ struct AliasGameplayScreen: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func resultRow(_ title: String, value: Int, color: Color) -> some View {
-        HStack {
-            Text(title)
-            Spacer()
-            Text(String(value)).monospacedDigit()
-        }
-        .font(StudioTypography.subheadline)
-        .foregroundStyle(color)
-    }
-
     private func contentScreen<Content: View>(@ViewBuilder content: () -> Content) -> some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 16, content: content)
@@ -889,37 +1078,29 @@ struct AliasGameplayScreen: View {
         }
     }
 
-    private func turnResultTitle(for player: AliasPlayer) -> String {
-        switch aliasGameState.configuration.mode {
-        case .classic:
-            return copy("alias.game.result.title", fallback: "%@’s turn is over", playerName(player))
-        case .fastest:
-            if aliasGameState.score(for: player) < aliasGameState.configuration.targetScore {
-                return copy(
-                    "alias.game.result.fastest.resume_title",
-                    fallback: "%@ needs more points",
-                    playerName(player)
-                )
-            }
-            return copy("alias.game.result.fastest.title", fallback: "%@ reached the goal", playerName(player))
-        }
-    }
-
-    private func turnResultSubtitle(for _: AliasPlayer) -> String? {
-        switch aliasGameState.configuration.mode {
-        case .classic:
-            return copy("alias.game.result.round", fallback: "Round %d", aliasGameState.roundNumber)
-        case .fastest:
-            return nil
-        }
-    }
-
     private func turnResultValue(for player: AliasPlayer) -> String {
         switch aliasGameState.configuration.mode {
         case .classic:
             return signed(aliasGameState.turnScore)
         case .fastest:
             return formatDuration(aliasGameState.elapsedTime(for: player) ?? aliasGameState.elapsedTime)
+        }
+    }
+
+    private func turnResultBadgeText(for player: AliasPlayer) -> String {
+        switch aliasGameState.configuration.mode {
+        case .classic:
+            return copy(
+                "alias.game.result.summary_score",
+                fallback: "Result %@",
+                turnResultValue(for: player)
+            )
+        case .fastest:
+            return copy(
+                "alias.game.result.summary_time",
+                fallback: "Time %@",
+                turnResultValue(for: player)
+            )
         }
     }
 
@@ -953,6 +1134,30 @@ struct AliasGameplayScreen: View {
 
     private func copy(_ key: String, fallback: String, _ value: CVarArg) -> String {
         aliasLocalizedFormat(key, fallback: fallback, value)
+    }
+}
+
+private struct ReviewScrollOffsetPreferenceKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+private struct ReviewContentHeightPreferenceKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+private struct ReviewViewportHeightPreferenceKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
 

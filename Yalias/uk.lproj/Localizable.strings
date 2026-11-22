@@ -60,9 +60,12 @@
 "alias.game.review.empty" = "У цьому ході немає завершених слів.";
 "alias.game.review.guessed" = "Вгадано";
 "alias.game.review.skipped" = "Пропущено";
-"alias.game.review.declined" = "Відхилено";
+"alias.game.review.declined" = "Виключено";
 "alias.game.review.resume" = "Продовжити хід";
 "alias.game.result.title" = "Хід гравця %@ завершено";
+"alias.game.result.completed" = "Хід завершено";
+"alias.game.result.summary_score" = "Результат %@";
+"alias.game.result.summary_time" = "Час %@";
 "alias.game.result.round" = "Раунд %d";
 "alias.game.result.correct" = "Вгадано";
 "alias.game.result.skipped" = "Пропущено";

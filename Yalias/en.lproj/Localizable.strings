@@ -60,9 +60,12 @@
 "alias.game.review.empty" = "No words were completed this turn.";
 "alias.game.review.guessed" = "Guessed";
 "alias.game.review.skipped" = "Skipped";
-"alias.game.review.declined" = "Declined";
+"alias.game.review.declined" = "Excluded";
 "alias.game.review.resume" = "Resume turn";
 "alias.game.result.title" = "%@’s turn is over";
+"alias.game.result.completed" = "Turn complete";
+"alias.game.result.summary_score" = "Result %@";
+"alias.game.result.summary_time" = "Time %@";
 "alias.game.result.round" = "Round %d";
 "alias.game.result.correct" = "Correct";
 "alias.game.result.skipped" = "Skipped";
