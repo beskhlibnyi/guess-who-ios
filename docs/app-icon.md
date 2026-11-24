@@ -1,9 +1,14 @@
-# App icon
+# App icon and logo
 
-The icon represents the growing collection of social games, using the shared cream, teal, coral, and gold palette.
+The YALIAS identity represents a word being passed between players. Two handmade paper hands and two curved relay marks alternate between the same mustard and vermilion colors used by the conversation bubbles on the main menu. The game name sits on the torn paper being passed.
 
-Generated with the built-in image generation tool. The result was resized to an opaque 1024 × 1024 PNG and added to `Yalias/Assets.xcassets/AppIcon.appiconset/AppIcon.png`.
+The production assets were generated with the built-in image generation tool and retained in `design-assets/yalias-logo`:
 
-## Generation prompt
+- `yalias-app-icon-1024.png` is the opaque 1024 × 1024 app-icon master.
+- `yalias-start-screen-logo-1024.png` is the transparent start-screen master.
 
-Use case: logo-brand. Create one finished iPhone app icon for a growing collection of offline social party games played together on one phone, including word games and guessing games. The icon must represent game night as a whole. Square 1024x1024 raster artwork, full bleed opaque warm cream background (#FBF6EC) extending to all four square corners. A compact, beautifully balanced central cluster: a large softly rounded deep teal die (#1E7872) in subtle three-quarter view with bold cream circular pips, resting in front of two overlapping blank game cards, one muted coral (#D65A47) and one warm golden ochre (#BA9445), fanned slightly apart. One clear dominant die and two simple supporting card shapes. Cluster occupies about 74% of canvas with comfortable safe margins. Refined playful tactile illustration, matte surfaces, softly beveled edges, restrained soft shadows, crisp strong silhouettes, polished minimal composition, easily readable at tiny app icon sizes. No text, no letters, no question marks, no faces or people, no playing-card suits, no extra objects, no confetti, no border, no device mockup, no surrounding frame, no pre-rounded outer icon corners, no transparency. Broad welcoming board-game and party-game feeling.
+The app icon is installed at `Yalias/Assets.xcassets/AppIcon.appiconset/AppIcon.png`. The start-screen logo is installed in `YaliasLogo.imageset`.
+
+## Production prompt
+
+Create the isolated YALIAS pass-and-play emblem in tactile handmade paper collage. Use a mustard upper-left hand and lower-left relay arc (`#F2B51D`), a vermilion lower-right hand and upper-right relay arc (`#D94A32`), and a central torn cream paper slip (`#FFF3DE`) with the exact black hand-painted word “YALIAS” (`#211E19`). Preserve rough torn edges, visible paper fibers, flat colors, and restrained natural paper shadows. For the app icon, use an opaque full-bleed warm cream background (`#F9ECD9`) without a rounded mask. For the start-screen asset, use a genuinely transparent background. Include no extra text, objects, borders, badges, gradients, glossy effects, or 3D rendering.

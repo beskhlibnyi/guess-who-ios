@@ -51,35 +51,12 @@ struct AliasHomeScreen: View {
     }
 
     private var header: some View {
-        ZStack(alignment: .topTrailing) {
-            VStack(spacing: 3) {
-                HStack(spacing: -10) {
-                    Image(systemName: "bubble.fill")
-                        .foregroundStyle(StudioTheme.mustard)
-                        .font(.system(size: 40, weight: .bold))
-                        .rotationEffect(.degrees(-8))
-                    Image(systemName: "bubble.fill")
-                        .foregroundStyle(StudioTheme.vermilion)
-                        .font(.system(size: 48, weight: .bold))
-                        .rotationEffect(.degrees(7))
-                }
-                .frame(height: 40)
-
-                AliasBrandTitle()
-                    .foregroundStyle(StudioTheme.paperInk)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.72)
-
-                Capsule()
-                    .fill(StudioTheme.mustard)
-                    .frame(width: 166, height: 7)
-                    .rotationEffect(.degrees(-2))
-                    .offset(y: -7)
-
-            }
+        Image("YaliasLogo")
+            .resizable()
+            .scaledToFit()
+            .frame(height: 160)
             .frame(maxWidth: .infinity)
-
-        }
+            .accessibilityLabel(copy("app.title", fallback: "YALIAS"))
     }
 
     private var settings: some View {
@@ -383,30 +360,6 @@ struct AliasHomeScreen: View {
 
     private func copy(_ key: String, fallback: String, _ value: Int) -> String {
         aliasLocalizedFormat(key, fallback: fallback, value)
-    }
-}
-
-private struct AliasBrandTitle: View {
-    private var accessibleTitle: String {
-        aliasLocalized("app.title", fallback: "YALIAS")
-    }
-
-    @ViewBuilder
-    var body: some View {
-        if AliasLanguage.active == .ukrainian {
-            Text(accessibleTitle)
-                .font(StudioTypography.brandTitle)
-        } else {
-            HStack(alignment: .center, spacing: -3) {
-                Text("УА")
-                Text("Г")
-                    .scaleEffect(x: 1, y: -1, anchor: .center)
-                Text("ІАЗ")
-            }
-            .font(StudioTypography.brandTitle)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(accessibleTitle)
-        }
     }
 }
 

@@ -18,7 +18,7 @@
 - Reuse `StudioTheme`, `StudioTypography`, and `ActionButtonStyle` for visual consistency.
 - Do not add accounts, analytics, or gameplay network dependencies.
 - Preserve unrelated user changes in a dirty worktree.
-- Before handoff, run the simulator build, search for stale references, and run `git diff --check`.
+- Do not run simulator builds automatically; the user will build and run the app manually. Before handoff, search for stale references and run `git diff --check`.
 
 ## Alias vocabulary
 

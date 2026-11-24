@@ -107,7 +107,6 @@ struct ActionButtonStyle: ButtonStyle {
 
 enum StudioTypography {
     static let displaySmall = Font.custom("AvenirNext-Heavy", size: 34)
-    static let brandTitle = Font.custom("Yakutovych", size: 64)
     static let title = Font.custom("AvenirNext-DemiBold", size: 22)
     static let subheadline = Font.custom("AvenirNext-Medium", size: 17)
     static let body = Font.custom("AvenirNext-Regular", size: 17)
