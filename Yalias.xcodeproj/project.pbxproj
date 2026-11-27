@@ -15,8 +15,6 @@
 		A1B2C3D4E5F60718293A4B65 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B55 /* Assets.xcassets */; };
 		A1B2C3D4E5F60718293A4B66 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B69 /* Localizable.strings */; };
 		A1B2C3D4E5F60718293A4B6A /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B6B /* Localization.swift */; };
-		A1B2C3D4E5F60718293A4B6D /* Yakutovych.ttf in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B6C /* Yakutovych.ttf */; };
-		A1B2C3D4E5F60718293A4B9C /* LanguageFlagView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B9D /* LanguageFlagView.swift */; };
 		F1E2D3C4B5A6978877665501 /* AliasSettingsDrawer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2D3C4B5A6978877665502 /* AliasSettingsDrawer.swift */; };
 		F1E2D3C4B5A6978877665503 /* StudioDesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2D3C4B5A6978877665504 /* StudioDesignSystem.swift */; };
 		F0E1D2C3B4A5968778695A01 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E1D2C3B4A5968778695A02 /* ContentView.swift */; };
@@ -43,8 +41,6 @@
 		A1B2C3D4E5F60718293A4B67 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B68 /* uk */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = uk; path = uk.lproj/Localizable.strings; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A4B6B /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
-		A1B2C3D4E5F60718293A4B6C /* Yakutovych.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Yakutovych.ttf; sourceTree = "<group>"; };
-		A1B2C3D4E5F60718293A4B9D /* LanguageFlagView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/UI/LanguageFlagView.swift; sourceTree = "<group>"; };
 		F1E2D3C4B5A6978877665502 /* AliasSettingsDrawer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/UI/AliasSettingsDrawer.swift; sourceTree = "<group>"; };
 		F1E2D3C4B5A6978877665504 /* StudioDesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared/UI/StudioDesignSystem.swift; sourceTree = "<group>"; };
 		F0E1D2C3B4A5968778695A02 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -83,7 +79,6 @@
 			isa = PBXGroup;
 			children = (
 				A1B2C3D4E5F60718293A4B51 /* YaliasApp.swift */,
-				A1B2C3D4E5F60718293A4B9D /* LanguageFlagView.swift */,
 				F1E2D3C4B5A6978877665502 /* AliasSettingsDrawer.swift */,
 				F1E2D3C4B5A6978877665504 /* StudioDesignSystem.swift */,
 				F0E1D2C3B4A5968778695A02 /* ContentView.swift */,
@@ -101,7 +96,6 @@
 				A1B2C3D4E5F60718293A4B6B /* Localization.swift */,
 				A1B2C3D4E5F60718293A4B69 /* Localizable.strings */,
 				A1B2C3D4E5F60718293A4B55 /* Assets.xcassets */,
-				A1B2C3D4E5F60718293A4B6C /* Yakutovych.ttf */,
 				A1B2C3D4E5F60718293A4B57 /* Info.plist */,
 			);
 			path = Yalias;
@@ -188,7 +182,6 @@
 			files = (
 				A1B2C3D4E5F60718293A4B65 /* Assets.xcassets in Resources */,
 				A1B2C3D4E5F60718293A4B66 /* Localizable.strings in Resources */,
-				A1B2C3D4E5F60718293A4B6D /* Yakutovych.ttf in Resources */,
 				B2C3D4E5F60718293A4B603 /* alias_uk_words.sqlite in Resources */,
 				B2C3D4E5F60718293A4B605 /* AliasVocabularyAttribution.md in Resources */,
 			);
@@ -203,7 +196,6 @@
 			files = (
 				A1B2C3D4E5F60718293A4B61 /* YaliasApp.swift in Sources */,
 				A1B2C3D4E5F60718293A4B6A /* Localization.swift in Sources */,
-				A1B2C3D4E5F60718293A4B9C /* LanguageFlagView.swift in Sources */,
 				F1E2D3C4B5A6978877665501 /* AliasSettingsDrawer.swift in Sources */,
 				F1E2D3C4B5A6978877665503 /* StudioDesignSystem.swift in Sources */,
 				F0E1D2C3B4A5968778695A01 /* ContentView.swift in Sources */,

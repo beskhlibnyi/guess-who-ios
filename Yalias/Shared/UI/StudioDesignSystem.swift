@@ -107,7 +107,6 @@ struct ActionButtonStyle: ButtonStyle {
 
 enum StudioTypography {
     static let displaySmall = Font.custom("AvenirNext-Heavy", size: 34)
-    static let title = Font.custom("AvenirNext-DemiBold", size: 22)
     static let subheadline = Font.custom("AvenirNext-Medium", size: 17)
     static let body = Font.custom("AvenirNext-Regular", size: 17)
     static let footnote = Font.custom("AvenirNext-Regular", size: 14)
@@ -142,10 +141,8 @@ enum StudioTheme {
     static let paperHighlight = Color(red: 1.0, green: 0.974, blue: 0.925)
     static let paperInk = Color(red: 0.129, green: 0.118, blue: 0.098)
     static let olive = Color(red: 0.373, green: 0.478, blue: 0.176)
-    static let oliveAccessible = Color(red: 0.286, green: 0.384, blue: 0.122)
     static let mustard = Color(red: 0.949, green: 0.710, blue: 0.114)
     static let vermilion = Color(red: 0.851, green: 0.290, blue: 0.196)
-    static let vermilionAccessible = Color(red: 0.663, green: 0.227, blue: 0.165)
     static let sky = Color(red: 0.471, green: 0.682, blue: 0.816)
     static let sage = Color(red: 0.608, green: 0.667, blue: 0.345)
 }

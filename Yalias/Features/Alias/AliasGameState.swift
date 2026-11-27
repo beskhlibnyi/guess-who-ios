@@ -89,7 +89,6 @@ final class AliasGameState: ObservableObject {
     @Published private(set) var secondsRemaining = defaultTurnDuration
     @Published private(set) var turnWords: [TurnWord] = []
     @Published private(set) var completedTurns = 0
-    @Published private(set) var isOvertime = false
     @Published private(set) var isPaused = false
     @Published private(set) var elapsedTime: TimeInterval = 0
     @Published private(set) var elapsedTimesByPlayer: [AliasPlayer: TimeInterval] = [:]
@@ -114,24 +113,8 @@ final class AliasGameState: ObservableObject {
         }
     }
 
-    var roundNumber: Int {
-        completedTurns / 2 + 1
-    }
-
     var turnScore: Int {
         turnWords.reduce(0) { $0 + $1.outcome.scoreDelta }
-    }
-
-    var correctCount: Int {
-        turnWords.count { $0.outcome == .guessed }
-    }
-
-    var skippedCount: Int {
-        turnWords.count { $0.outcome == .skipped }
-    }
-
-    var declinedCount: Int {
-        turnWords.count { $0.outcome == .declined }
     }
 
     func score(for player: AliasPlayer) -> Int {
@@ -171,7 +154,6 @@ final class AliasGameState: ObservableObject {
         secondsRemaining = Int(configuration.turnDuration)
         turnWords = []
         completedTurns = 0
-        isOvertime = false
         isPaused = false
         elapsedTime = 0
         elapsedTimesByPlayer = [:]
@@ -469,9 +451,7 @@ final class AliasGameState: ObservableObject {
         let targetReached = max(playerOneScore, playerTwoScore) >= configuration.targetScore
         guard targetReached else { return }
 
-        if playerOneScore == playerTwoScore {
-            isOvertime = true
-        } else {
+        if playerOneScore != playerTwoScore {
             pendingWinner = playerOneScore > playerTwoScore ? .one : .two
         }
     }

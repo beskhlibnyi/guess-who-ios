@@ -1213,34 +1213,6 @@ struct AliasGameplayScreen: View {
         navigationState.showMenu()
     }
 
-    private func header(title: String, subtitle: String? = nil) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            if aliasGameState.isOvertime {
-                Text(copy("alias.game.overtime", fallback: "OVERTIME"))
-                    .font(StudioTypography.compactLabel)
-                    .foregroundStyle(StudioTheme.coral)
-            }
-            Text(title)
-                .font(StudioTypography.displaySmall)
-                .foregroundStyle(StudioTheme.ink)
-            if let subtitle {
-                Text(subtitle)
-                    .font(StudioTypography.body)
-                    .foregroundStyle(StudioTheme.muted)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func contentScreen<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 16, content: content)
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
-                .padding(.bottom, 36)
-        }
-    }
-
     private func messageScreen<Content: View>(
         icon: String,
         title: String,
@@ -1265,17 +1237,6 @@ struct AliasGameplayScreen: View {
             Spacer()
         }
         .padding(24)
-    }
-
-    private func card<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        content()
-            .padding(24)
-            .frame(maxWidth: .infinity)
-            .background(StudioTheme.card, in: RoundedRectangle(cornerRadius: 28, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .stroke(StudioTheme.line.opacity(0.5))
-            }
     }
 
     private var timeText: String {
