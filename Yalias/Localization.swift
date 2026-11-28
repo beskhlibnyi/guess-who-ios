@@ -128,7 +128,7 @@ enum AliasLocalizationCatalog {
         "alias.vocabulary_review.title": AliasLocalizedString("alias.vocabulary_review.title", defaultValue: "Review words"),
         "alias.menu.mode": AliasLocalizedString("alias.menu.mode", defaultValue: "Game mode"),
         "alias.menu.mode.classic": AliasLocalizedString("alias.menu.mode.classic", defaultValue: "Classic"),
-        "alias.menu.mode.fastest": AliasLocalizedString("alias.menu.mode.fastest", defaultValue: "Fastest"),
+        "alias.menu.mode.fastest": AliasLocalizedString("alias.menu.mode.fastest", defaultValue: "Fast"),
         "alias.menu.goal": AliasLocalizedString("alias.menu.goal", defaultValue: "Goal"),
         "alias.menu.goal.option": AliasLocalizedString("alias.menu.goal.option", defaultValue: "%d points"),
         "alias.menu.time": AliasLocalizedString("alias.menu.time", defaultValue: "Turn time"),

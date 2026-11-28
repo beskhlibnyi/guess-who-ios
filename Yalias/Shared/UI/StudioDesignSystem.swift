@@ -136,6 +136,7 @@ enum StudioTheme {
 
     // YALIAS handmade-paper direction. Keep the original semantic colors above
     // while the new visual language is rolled out screen by screen.
+    static let homeCanvas = Color(red: 0.992, green: 0.882, blue: 0.776)
     static let paperCanvas = Color(red: 0.976, green: 0.925, blue: 0.851)
     static let paper = Color(red: 1.0, green: 0.953, blue: 0.871)
     static let paperHighlight = Color(red: 1.0, green: 0.974, blue: 0.925)
@@ -145,6 +146,15 @@ enum StudioTheme {
     static let vermilion = Color(red: 0.851, green: 0.290, blue: 0.196)
     static let sky = Color(red: 0.471, green: 0.682, blue: 0.816)
     static let sage = Color(red: 0.608, green: 0.667, blue: 0.345)
+
+    static func accentGradientColor(at progress: Double) -> Color {
+        let progress = min(max(progress, 0), 1)
+        return Color(
+            red: 0.949 + (0.851 - 0.949) * progress,
+            green: 0.710 + (0.290 - 0.710) * progress,
+            blue: 0.114 + (0.196 - 0.114) * progress
+        )
+    }
 }
 
 struct YaliasPaperBackgroundView: View {
@@ -225,7 +235,7 @@ private struct CornerPaperPatch: Shape {
     }
 }
 
-private struct PaperGrain: Shape {
+struct PaperGrain: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let columns = max(Int(rect.width / 20), 1)
@@ -247,18 +257,27 @@ private struct PaperGrain: Shape {
 struct PaperPanel<Content: View>: View {
     private let content: Content
     private let padding: CGFloat
+    private let cornerRadius: CGFloat
 
-    init(padding: CGFloat = 18, @ViewBuilder content: () -> Content) {
+    init(
+        padding: CGFloat = 18,
+        cornerRadius: CGFloat = 24,
+        @ViewBuilder content: () -> Content
+    ) {
         self.padding = padding
+        self.cornerRadius = cornerRadius
         self.content = content()
     }
 
     var body: some View {
         content
             .padding(padding)
-            .background(StudioTheme.paper.opacity(0.96), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .background(
+                StudioTheme.paper.opacity(0.96),
+                in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            )
             .overlay {
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .stroke(StudioTheme.paperInk.opacity(0.12), lineWidth: 1)
             }
             .shadow(color: StudioTheme.paperInk.opacity(0.13), radius: 8, x: 1, y: 6)
@@ -355,6 +374,8 @@ struct PaperSlider: View {
     @Binding var value: Int
     let range: ClosedRange<Int>
     let accessibilityValue: String
+    var fillStyle: AnyShapeStyle = AnyShapeStyle(StudioTheme.olive)
+    var thumbColor: Color = StudioTheme.mustard
 
     var body: some View {
         GeometryReader { geometry in
@@ -362,6 +383,7 @@ struct PaperSlider: View {
             let availableWidth = max(geometry.size.width - inset * 2, 1)
             let progress = CGFloat(value - range.lowerBound) / CGFloat(max(range.upperBound - range.lowerBound, 1))
             let thumbX = inset + availableWidth * progress
+            let fillTrackWidth = max(availableWidth - 2, 1)
 
             ZStack(alignment: .leading) {
                 Capsule()
@@ -371,12 +393,16 @@ struct PaperSlider: View {
                     .padding(.horizontal, inset)
 
                 Capsule()
-                    .fill(StudioTheme.olive)
-                    .frame(width: max(thumbX - inset, 1), height: 16)
-                    .padding(.leading, inset + 1)
+                    .fill(fillStyle)
+                    .frame(width: fillTrackWidth, height: 16)
+                    .mask(alignment: .leading) {
+                        Rectangle()
+                            .frame(width: max(fillTrackWidth * progress, 1))
+                    }
+                    .offset(x: inset + 1)
 
                 Circle()
-                    .fill(StudioTheme.mustard)
+                    .fill(thumbColor)
                     .overlay { Circle().stroke(StudioTheme.paperInk, lineWidth: 2.4) }
                     .frame(width: 30, height: 30)
                     .position(x: thumbX, y: geometry.size.height / 2)

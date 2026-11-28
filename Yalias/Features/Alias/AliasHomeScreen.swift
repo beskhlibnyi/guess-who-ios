@@ -20,7 +20,7 @@ struct AliasHomeScreen: View {
 
     var body: some View {
         ZStack {
-            YaliasPaperBackgroundView()
+            AliasHomeBackgroundView()
 
             VStack(spacing: 12) {
                 header
@@ -60,7 +60,7 @@ struct AliasHomeScreen: View {
     }
 
     private var settings: some View {
-        PaperPanel(padding: 14) {
+        PaperPanel(padding: 14, cornerRadius: 20) {
             VStack(spacing: 10) {
                 modePicker
                 goalPicker
@@ -82,15 +82,23 @@ struct AliasHomeScreen: View {
             ForEach(AliasGameState.GameMode.allCases) { mode in
                 let isSelected = selectedGameMode == mode
                 Button {
-                    gameModeRawValue = mode.rawValue
+                    withAnimation(.snappy(duration: 0.22)) {
+                        gameModeRawValue = mode.rawValue
+                    }
                 } label: {
                     Text(modeName(mode))
                         .font(StudioTypography.paperControl)
                         .lineLimit(1)
                         .minimumScaleFactor(0.72)
-                        .frame(maxWidth: .infinity, minHeight: 50)
-                        .foregroundStyle(isSelected ? StudioTheme.paperHighlight : StudioTheme.paperInk)
-                        .background(isSelected ? StudioTheme.olive : Color.clear, in: Capsule())
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .foregroundStyle(modeForegroundColor(mode, isSelected: isSelected))
+                        .background(isSelected ? modeSelectionColor(mode) : Color.clear, in: Capsule())
+                        .shadow(
+                            color: isSelected ? StudioTheme.paperInk.opacity(0.09) : .clear,
+                            radius: 2,
+                            x: 0,
+                            y: 2
+                        )
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
@@ -98,7 +106,7 @@ struct AliasHomeScreen: View {
         }
         .padding(4)
         .background(StudioTheme.paperHighlight, in: Capsule())
-        .overlay { Capsule().stroke(StudioTheme.paperInk, lineWidth: 2.2) }
+        .overlay { Capsule().stroke(StudioTheme.paperInk, lineWidth: 1.8) }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(copy("alias.menu.mode", fallback: "Game mode"))
     }
@@ -129,22 +137,26 @@ struct AliasHomeScreen: View {
                     selectDifficulty(level)
                 } label: {
                     Text(difficultyName(level))
-                        .font(StudioTypography.compactLabel)
+                        .font(StudioTypography.footnote.weight(.semibold))
                         .foregroundStyle(StudioTheme.paperInk)
                         .lineLimit(1)
                         .minimumScaleFactor(0.62)
                         .frame(maxWidth: .infinity, minHeight: 44)
-                        .background(difficultyColor(level).opacity(isSelected ? 1 : 0.27), in: Capsule())
+                        .background(
+                            isSelected
+                                ? difficultyGradientSegment(for: level)
+                                : AnyShapeStyle(StudioTheme.paperHighlight),
+                            in: RoundedRectangle(cornerRadius: 13, style: .continuous)
+                        )
                         .overlay {
-                            Capsule()
-                                .stroke(StudioTheme.paperHighlight, lineWidth: isSelected ? 4 : 0)
-                                .padding(-2)
+                            RoundedRectangle(cornerRadius: 13, style: .continuous)
+                                .stroke(StudioTheme.paperInk, lineWidth: 1.5)
                         }
                         .shadow(
-                            color: isSelected ? StudioTheme.paperInk.opacity(0.14) : .clear,
-                            radius: 4,
-                            x: 1,
-                            y: 3
+                            color: isSelected ? StudioTheme.paperInk.opacity(0.11) : .clear,
+                            radius: 3,
+                            x: 0,
+                            y: 2
                         )
                 }
                 .buttonStyle(.plain)
@@ -158,7 +170,9 @@ struct AliasHomeScreen: View {
 
     private var adjectivesPicker: some View {
         Button {
-            includeAdjectives.toggle()
+            withAnimation(.snappy(duration: 0.22)) {
+                includeAdjectives.toggle()
+            }
         } label: {
             HStack(spacing: 16) {
                 Text(copy("alias.filter.adjectives", fallback: "Include adjectives"))
@@ -168,32 +182,10 @@ struct AliasHomeScreen: View {
 
                 Spacer()
 
-                ZStack {
-                    Circle()
-                        .fill(includeAdjectives ? StudioTheme.olive : StudioTheme.paper)
-                    Circle()
-                        .stroke(StudioTheme.paperInk, lineWidth: 2.2)
-
-                    if includeAdjectives {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 17, weight: .black))
-                            .foregroundStyle(StudioTheme.paperHighlight)
-                    }
-                }
-                .frame(width: 36, height: 36)
-                .rotationEffect(.degrees(includeAdjectives ? -3 : 2))
+                AliasPaperToggle(isOn: includeAdjectives)
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 4)
             .frame(minHeight: 56)
-            .background(StudioTheme.paperHighlight.opacity(0.74), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .overlay(alignment: .bottomLeading) {
-                Capsule()
-                    .fill(StudioTheme.vermilion)
-                    .frame(width: 112, height: 4)
-                    .rotationEffect(.degrees(-2))
-                    .offset(x: 18, y: -8)
-            }
-            .shadow(color: StudioTheme.paperInk.opacity(0.08), radius: 4, x: 1, y: 3)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(includeAdjectives ? .isSelected : [])
@@ -209,11 +201,7 @@ struct AliasHomeScreen: View {
                         : copy("alias.menu.start_game", fallback: "Start game")
                 )
             }
-            .buttonStyle(
-                PaperActionButtonStyle(
-                    kind: .filled(aliasGameState.canResume ? StudioTheme.olive : StudioTheme.vermilion)
-                )
-            )
+            .buttonStyle(AliasHomePrimaryButtonStyle())
 
             if aliasGameState.canResume {
                 Button(action: newMatchTapped) {
@@ -282,17 +270,44 @@ struct AliasHomeScreen: View {
     private func modeName(_ mode: AliasGameState.GameMode) -> String {
         switch mode {
         case .classic: copy("alias.menu.mode.classic", fallback: "Classic")
-        case .fastest: copy("alias.menu.mode.fastest", fallback: "Fastest")
+        case .fastest: copy("alias.menu.mode.fastest", fallback: "Fast")
         }
     }
 
-    private func difficultyColor(_ level: AliasVocabulary.DifficultyLevel) -> Color {
-        switch level {
-        case .easy: StudioTheme.sky
-        case .medium: StudioTheme.mustard
-        case .hard: StudioTheme.vermilion
-        case .expert: StudioTheme.sage
+    private func modeSelectionColor(_ mode: AliasGameState.GameMode) -> Color {
+        switch mode {
+        case .classic: StudioTheme.mustard
+        case .fastest: StudioTheme.vermilion
         }
+    }
+
+    private func modeForegroundColor(
+        _ mode: AliasGameState.GameMode,
+        isSelected: Bool
+    ) -> Color {
+        guard isSelected else { return StudioTheme.paperInk }
+        return mode == .fastest ? StudioTheme.paperHighlight : StudioTheme.paperInk
+    }
+
+    private func difficultyGradientSegment(
+        for level: AliasVocabulary.DifficultyLevel
+    ) -> AnyShapeStyle {
+        let levels = AliasVocabulary.DifficultyLevel.allCases
+        let index = levels.firstIndex(of: level) ?? 0
+        let segmentCount = Double(max(levels.count, 1))
+        let start = Double(index) / segmentCount
+        let end = Double(index + 1) / segmentCount
+
+        return AnyShapeStyle(
+            LinearGradient(
+                colors: [
+                    StudioTheme.accentGradientColor(at: start),
+                    StudioTheme.accentGradientColor(at: end)
+                ],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        )
     }
 
     private func selectDifficulty(_ level: AliasVocabulary.DifficultyLevel) {
@@ -387,9 +402,167 @@ private struct AliasValueSlider: View {
             PaperSlider(
                 value: $selection,
                 range: range,
-                accessibilityValue: valueLabel(selection)
+                accessibilityValue: valueLabel(selection),
+                fillStyle: AnyShapeStyle(
+                    LinearGradient(
+                        colors: [StudioTheme.mustard, StudioTheme.vermilion],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                ),
+                thumbColor: StudioTheme.accentGradientColor(at: sliderProgress)
             )
             .accessibilityLabel(title)
         }
+    }
+
+    private var sliderProgress: Double {
+        let span = max(range.upperBound - range.lowerBound, 1)
+        return Double(selection - range.lowerBound) / Double(span)
+    }
+}
+
+private struct AliasPaperToggle: View {
+    let isOn: Bool
+
+    var body: some View {
+        ZStack {
+            Capsule()
+                .fill(isOn ? StudioTheme.olive : StudioTheme.paperHighlight)
+
+            Capsule()
+                .stroke(StudioTheme.paperInk.opacity(isOn ? 0.18 : 0.55), lineWidth: 1.5)
+
+            Circle()
+                .fill(StudioTheme.paperHighlight)
+                .overlay {
+                    Circle().stroke(StudioTheme.paperInk.opacity(0.16), lineWidth: 1)
+                }
+                .shadow(color: StudioTheme.paperInk.opacity(0.16), radius: 2, x: 0, y: 2)
+                .padding(4)
+                .frame(maxWidth: .infinity, alignment: isOn ? .trailing : .leading)
+        }
+        .frame(width: 68, height: 40)
+        .accessibilityHidden(true)
+    }
+}
+
+private struct AliasHomePrimaryButtonStyle: ButtonStyle {
+    private let cornerRadius: CGFloat = 15
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(StudioTypography.paperButton)
+            .padding(.horizontal, 24)
+            .frame(maxWidth: .infinity, minHeight: 64)
+            .foregroundStyle(StudioTheme.paperHighlight)
+            .background {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(StudioTheme.vermilion.opacity(configuration.isPressed ? 0.86 : 1))
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(StudioTheme.paperInk, lineWidth: 1.8)
+            }
+            .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .shadow(
+                color: StudioTheme.paperInk.opacity(configuration.isPressed ? 0.10 : 0.16),
+                radius: configuration.isPressed ? 3 : 6,
+                x: 0,
+                y: configuration.isPressed ? 2 : 4
+            )
+    }
+}
+
+private struct AliasHomeBackgroundView: View {
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack {
+                StudioTheme.homeCanvas
+
+                PaperGrain()
+                    .stroke(StudioTheme.paperInk.opacity(0.012), lineWidth: 0.45)
+
+                ribbon(kind: .mustard, color: StudioTheme.mustard)
+
+                ribbon(kind: .vermilion, color: StudioTheme.vermilion)
+            }
+            .frame(width: geometry.size.width, height: geometry.size.height)
+        }
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func ribbon(kind: AliasHomeRibbonShape.Kind, color: Color) -> some View {
+        AliasHomeRibbonShape(kind: kind)
+            .fill(color)
+            .overlay {
+                Image("RibbonPaperTexture")
+                    .resizable(resizingMode: .tile)
+                    .brightness(-0.12)
+                    .contrast(3.0)
+                    .blendMode(.overlay)
+                    .opacity(0.78)
+                    .mask(AliasHomeRibbonShape(kind: kind))
+            }
+            .compositingGroup()
+    }
+}
+
+private struct AliasHomeRibbonShape: Shape {
+    enum Kind {
+        case mustard
+        case vermilion
+    }
+
+    let kind: Kind
+
+    func path(in rect: CGRect) -> Path {
+        let designWidth: CGFloat = 900
+        let designHeight: CGFloat = 1_750
+
+        func point(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+            CGPoint(
+                x: rect.minX + x / designWidth * rect.width,
+                y: rect.minY + y / designHeight * rect.height
+            )
+        }
+
+        var path = Path()
+
+        switch kind {
+        case .mustard:
+            path.move(to: point(205, -55))
+            path.addCurve(
+                to: point(55, 1_800),
+                control1: point(-75, 240),
+                control2: point(-95, 1_100)
+            )
+            path.addLine(to: point(120, 1_800))
+            path.addCurve(
+                to: point(245, -20),
+                control1: point(-70, 1_100),
+                control2: point(-35, 260)
+            )
+
+        case .vermilion:
+            path.move(to: point(950, 158))
+            path.addCurve(
+                to: point(497, 1_800),
+                control1: point(760, 405),
+                control2: point(625, 920)
+            )
+            path.addLine(to: point(538, 1_800))
+            path.addCurve(
+                to: point(982, 194),
+                control1: point(720, 920),
+                control2: point(823, 452)
+            )
+        }
+
+        path.closeSubpath()
+        return path
     }
 }

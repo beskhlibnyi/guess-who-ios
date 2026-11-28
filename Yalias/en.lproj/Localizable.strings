@@ -44,7 +44,7 @@
 
 "alias.menu.mode" = "Game mode";
 "alias.menu.mode.classic" = "Classic";
-"alias.menu.mode.fastest" = "Fastest";
+"alias.menu.mode.fastest" = "Fast";
 "alias.game.timer.elapsed.accessibility" = "%d seconds elapsed";
 "alias.game.pause" = "Pause";
 "alias.game.paused" = "Paused";
